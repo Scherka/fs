@@ -16,15 +16,12 @@ func main() {
 	var root string
 	root, sort, err := flagParsing()
 	if err != nil {
-		fmt.Printf("%v \r\n", err)
-		return
+		panic(fmt.Sprintf("%v \r\n", err))
 	}
 	listOfEntities, err := getListOfEntitiesParameters(root)
 	if err != nil {
-		fmt.Printf("%v \r\n", err)
-		return
+		panic(fmt.Sprintf("%v \r\n", err))
 	}
-	//fmt.Println(listOfEntities)
 	output(sortListOfEntities(listOfEntities, sort))
 	//время выполнения программы
 	finish := time.Since(start).Truncate(10 * time.Millisecond).String()
@@ -33,20 +30,19 @@ func main() {
 
 // entity - содержит имя, тип и размер папки/файла
 type entityStruct struct {
-	name       string
-	entityType string
-	size       int64
+	name       string //Имя объекта
+	entityType string //Тип объекта
+	size       int64  //Размер объекта в байтах
 }
 
 // getMaxLenOfName - определить максимальную длину имени
 func getMaxLenOfName(listOfEntities []entityStruct) int {
 	max := 0
-	for _, e := range listOfEntities {
-		if utf8.RuneCountInString(e.name) > max {
-			max = utf8.RuneCountInString(e.name)
+	for _, entity := range listOfEntities {
+		if utf8.RuneCountInString(entity.name) > max {
+			max = utf8.RuneCountInString(entity.name)
 		}
 	}
-	//fmt.Println(max)
 	return max
 }
 
@@ -54,11 +50,10 @@ func getMaxLenOfName(listOfEntities []entityStruct) int {
 func output(listOfEntities []entityStruct) {
 	maxLen := getMaxLenOfName(listOfEntities)
 	fmt.Printf("Тип%sИмя%sРазмер\r\n", strings.Repeat(" ", 2), strings.Repeat(" ", maxLen-2))
-	for _, e := range listOfEntities {
-		//fmt.Println(e.entityType, utf8.RuneCountInString(e.entityType))
-		fmt.Printf("%s%s%s%s%s\r\n", e.entityType,
-			strings.Repeat(" ", 5-utf8.RuneCountInString(e.entityType)), e.name,
-			strings.Repeat(" ", maxLen-utf8.RuneCountInString(e.name)+1), convertSize(e.size))
+	for _, entity := range listOfEntities {
+		fmt.Printf("%s%s%s%s%s\r\n", entity.entityType,
+			strings.Repeat(" ", 5-utf8.RuneCountInString(entity.entityType)), entity.name,
+			strings.Repeat(" ", maxLen-utf8.RuneCountInString(entity.name)+1), convertSize(entity.size))
 	}
 }
 
@@ -149,9 +144,9 @@ func getSizeOfDir(path string) (int64, error) {
 	if err != nil {
 		return 0, fmt.Errorf("ошибка при чтении каталога %s: %v", path, err)
 	}
-	for _, e := range entities {
+	for _, entity := range entities {
 		//дополняем текущий путь новым файлом/папкой
-		fullPath := fmt.Sprintf("%s%s", formatDir(path), e.Name())
+		fullPath := fmt.Sprintf("%s%s", formatDir(path), entity.Name())
 		fileStat, err := os.Lstat(fullPath)
 		if err != nil {
 			return 0, fmt.Errorf("ошибка при получении параметров %s: %v", path, err)
@@ -160,7 +155,7 @@ func getSizeOfDir(path string) (int64, error) {
 			//если папка, то получаем её размер
 			tempSize, err := getSizeOfDir(fullPath)
 			if err != nil {
-				fmt.Printf("ошибка при чтении парметров %s :%v\r\n", e.Name(), err)
+				fmt.Printf("ошибка при чтении парметров %s :%v\r\n", entity.Name(), err)
 			}
 			sizeOfDir += tempSize
 		} else {
@@ -178,11 +173,11 @@ func getListOfEntitiesParameters(root string) ([]entityStruct, error) {
 	if err != nil {
 		return nil, fmt.Errorf("ошибка при чтении каталога %s: %v", root, err)
 	}
-	for _, e := range entities {
+	for _, entity := range entities {
 		//получаем параметры объекта
-		entityParameters, err := getEntityParameters(fmt.Sprintf("%s%s", root, e.Name()))
+		entityParameters, err := getEntityParameters(fmt.Sprintf("%s%s", root, entity.Name()))
 		if err != nil {
-			fmt.Printf("ошибка при чтении параметров %s :%v\r\n", e.Name(), err)
+			fmt.Printf("ошибка при чтении параметров %s :%v\r\n", entity.Name(), err)
 		} else {
 			listOfEntitiesParameters = append(listOfEntitiesParameters, entityParameters)
 		}
