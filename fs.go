@@ -6,6 +6,7 @@ import (
 	"os"
 	"sort"
 	"strings"
+	"sync"
 	"time"
 	"unicode/utf8"
 )
@@ -28,7 +29,7 @@ func main() {
 	fmt.Println("Время выполнения программы:", finish)
 }
 
-// entity - содержит имя, тип и размер папки/файла
+// entitySruct - содержит имя, тип и размер папки/файла
 type entityStruct struct {
 	name       string //Имя объекта
 	entityType string //Тип объекта
@@ -144,25 +145,35 @@ func getSizeOfDir(path string) (int64, error) {
 	if err != nil {
 		return 0, fmt.Errorf("ошибка при чтении каталога %s: %v", path, err)
 	}
+	//создаём группу ожидания
+	wg := sync.WaitGroup{}
 	for _, entity := range entities {
-		//дополняем текущий путь новым файлом/папкой
-		fullPath := fmt.Sprintf("%s%s", formatDir(path), entity.Name())
-		fileStat, err := os.Lstat(fullPath)
-		if err != nil {
-			return 0, fmt.Errorf("ошибка при получении параметров %s: %v", path, err)
-		}
-		if fileStat.IsDir() {
-			//если папка, то получаем её размер
-			tempSize, err := getSizeOfDir(fullPath)
+		wg.Add(1)
+		go func() (int64, error) {
+			defer wg.Done()
+			//дополняем текущий путь новым файлом/папкой
+			fullPath := fmt.Sprintf("%s%s", formatDir(path), entity.Name())
+			fileStat, errMain := os.Lstat(fullPath)
 			if err != nil {
-				fmt.Printf("ошибка при чтении парметров %s :%v\r\n", entity.Name(), err)
+				sizeOfDir = 0
+				fmt.Printf("ошибка при получении параметров %s: %v", path, err)
 			}
-			sizeOfDir += tempSize
-		} else {
-			sizeOfDir += fileStat.Size()
+			if fileStat.IsDir() {
+				//если папка, то получаем её размер
+				tempSize, err := getSizeOfDir(fullPath)
+				if err != nil {
+					fmt.Printf("ошибка при чтении парметров %s :%v\r\n", entity.Name(), err)
+					sizeOfDir = 4000
+				}
+				sizeOfDir += tempSize
+			} else {
+				sizeOfDir += fileStat.Size()
 
-		}
+			}
+			return sizeOfDir, errMain
+		}()
 	}
+	wg.Wait()
 	return sizeOfDir, nil
 }
 
@@ -173,14 +184,21 @@ func getListOfEntitiesParameters(root string) ([]entityStruct, error) {
 	if err != nil {
 		return nil, fmt.Errorf("ошибка при чтении каталога %s: %v", root, err)
 	}
+	//создаём группу ожидания
+	wg := sync.WaitGroup{}
 	for _, entity := range entities {
-		//получаем параметры объекта
-		entityParameters, err := getEntityParameters(fmt.Sprintf("%s%s", root, entity.Name()))
-		if err != nil {
-			fmt.Printf("ошибка при чтении параметров %s :%v\r\n", entity.Name(), err)
-		} else {
-			listOfEntitiesParameters = append(listOfEntitiesParameters, entityParameters)
-		}
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			//получаем параметры объекта
+			entityParameters, err := getEntityParameters(fmt.Sprintf("%s%s", root, entity.Name()))
+			if err != nil {
+				fmt.Printf("ошибка при чтении параметров %s :%v\r\n", entity.Name(), err)
+			} else {
+				listOfEntitiesParameters = append(listOfEntitiesParameters, entityParameters)
+			}
+		}()
 	}
+	wg.Wait()
 	return listOfEntitiesParameters, nil
 }
