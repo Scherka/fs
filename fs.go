@@ -4,15 +4,15 @@ import (
 	"flag"
 	"fmt"
 	"os"
-
 	"sort"
-	//"strconv"
-	//"reflect"
 	"strings"
+	"time"
 	"unicode/utf8"
 )
 
 func main() {
+	//время начала программы
+	start := time.Now()
 	var root string
 	root, sort, err := flagParsing()
 	if err != nil {
@@ -26,6 +26,9 @@ func main() {
 	}
 	//fmt.Println(listOfEntities)
 	output(sortListOfEntities(listOfEntities, sort))
+	//время выполнения программы
+	finish := time.Since(start).Truncate(10 * time.Millisecond).String()
+	fmt.Println("Время выполнения программы:", finish)
 }
 
 // entity - содержит имя, тип и размер папки/файла
@@ -117,16 +120,16 @@ func formatDir(dirWithoutSuffix string) string {
 // getEntityParameters - получить имя, размер и тип папки/файла
 func getEntityParameters(path string) (entityStruct, error) {
 	var entity entityStruct
-	file, err := os.Stat(path)
+	file, err := os.Lstat(path)
 	if err != nil {
-		return entity, fmt.Errorf("ошибка при получении парсметров %s: %v", path, err)
+		return entity, fmt.Errorf("ошибка при получении параметров %s: %v", path, err)
 	}
 	//если директория,то рекурсивно обходим всё её содержимое для получения размера
 	if file.IsDir() {
 		entity.entityType = "Дир"
 		tempSize, err := getSizeOfDir(path)
 		if err != nil {
-			fmt.Printf("ошибка при чтении парметров %s :%v\r\n", file.Name(), err)
+			fmt.Printf("ошибка при чтении параметров %s :%v\r\n", file.Name(), err)
 
 		} else {
 			entity.size += tempSize
@@ -151,14 +154,13 @@ func getSizeOfDir(path string) (int64, error) {
 		fullPath := fmt.Sprintf("%s%s", formatDir(path), e.Name())
 		fileStat, err := os.Lstat(fullPath)
 		if err != nil {
-			return 0, fmt.Errorf("ошибка при получении парсметров %s: %v", path, err)
+			return 0, fmt.Errorf("ошибка при получении параметров %s: %v", path, err)
 		}
 		if fileStat.IsDir() {
 			//если папка, то получаем её размер
 			tempSize, err := getSizeOfDir(fullPath)
 			if err != nil {
 				fmt.Printf("ошибка при чтении парметров %s :%v\r\n", e.Name(), err)
-
 			}
 			sizeOfDir += tempSize
 		} else {
@@ -169,7 +171,7 @@ func getSizeOfDir(path string) (int64, error) {
 	return sizeOfDir, nil
 }
 
-// getListOfEntities - получение списка папока и файлов в корневом катлоге
+// getListOfEntitiesParameters - получение списка папок/файлов и их свойств в корневом катлоге
 func getListOfEntitiesParameters(root string) ([]entityStruct, error) {
 	listOfEntitiesParameters := make([]entityStruct, 0)
 	entities, err := os.ReadDir(root)
@@ -177,14 +179,13 @@ func getListOfEntitiesParameters(root string) ([]entityStruct, error) {
 		return nil, fmt.Errorf("ошибка при чтении каталога %s: %v", root, err)
 	}
 	for _, e := range entities {
+		//получаем параметры объекта
 		entityParameters, err := getEntityParameters(fmt.Sprintf("%s%s", root, e.Name()))
 		if err != nil {
-			fmt.Printf("ошибка при чтении парметров %s :%v\r\n", e.Name(), err)
+			fmt.Printf("ошибка при чтении параметров %s :%v\r\n", e.Name(), err)
 		} else {
 			listOfEntitiesParameters = append(listOfEntitiesParameters, entityParameters)
 		}
-		//fmt.Println(getEntityParameters(fmt.Sprintf("%s%s", root, e.Name())))
-		//fmt.Println(e.Name(), e.IsDir())
 	}
 	return listOfEntitiesParameters, nil
 }
