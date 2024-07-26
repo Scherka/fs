@@ -59,20 +59,23 @@ func output(listOfEntities []entityStruct) {
 
 // convertSize - конвертация размеров из байт
 func convertSize(size int64) string {
-	prefixes := []string{"byte", "kbyte", "mbyte", "gbyte"}
+	prefixes := []string{"byte", "kbyte", "mbyte", "gbyte", "tbyte"}
 	i := 0
-	for (size > 1000) && (i < 3) {
-		size = size / 1000
+	sizeFloat := float64(size)
+	for (sizeFloat > 1000) && (i < 4) {
+		sizeFloat = sizeFloat / 1000
 		i++
 	}
-	return fmt.Sprintf("%d %s", size, prefixes[i])
+	return fmt.Sprintf("%.2f %s", sizeFloat, prefixes[i])
 }
 
 // sortListOfEntities - сортировка списка сущностей
 func sortListOfEntities(listOfEntities []entityStruct, flag string) []entityStruct {
-	if flag == "desc" {
+	const asc = "asc"
+	const desc = "desc"
+	if flag == desc {
 		sort.Slice(listOfEntities, func(i, j int) bool { return listOfEntities[i].size > listOfEntities[j].size })
-	} else if flag == "asc" {
+	} else if flag == asc {
 		sort.Slice(listOfEntities, func(i, j int) bool { return listOfEntities[i].size < listOfEntities[j].size })
 	}
 	return listOfEntities
@@ -80,7 +83,8 @@ func sortListOfEntities(listOfEntities []entityStruct, flag string) []entityStru
 
 // flagParsing - обработка флагов
 func flagParsing() (string, string, error) {
-
+	const asc = "asc"
+	const desc = "desc"
 	//флаг каталога
 	root := flag.String("root", "", "используйте флаг -root для введения сканируемого каталога.")
 	//флаг сортировки
@@ -95,7 +99,7 @@ func flagParsing() (string, string, error) {
 		flag.PrintDefaults()
 		return "", "", fmt.Errorf("отстутствуют необходимые флаги: -sort")
 	}
-	if *sort != "asc" && *sort != "desc" {
+	if *sort != asc && *sort != desc {
 		flag.PrintDefaults()
 		return "", "", fmt.Errorf("флаг -sort задан в неверном формате")
 	}
@@ -150,8 +154,7 @@ func getSizeOfDir(path string) (int64, error) {
 		fileStat, err := os.Lstat(fullPath)
 		if err != nil {
 			return 0, fmt.Errorf("ошибка при получении параметров %s: %v", path, err)
-		}
-		if fileStat.IsDir() {
+		} else if fileStat.IsDir() {
 			//если папка, то получаем её размер
 			tempSize, err := getSizeOfDir(fullPath)
 			if err != nil {
