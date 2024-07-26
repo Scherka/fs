@@ -73,9 +73,11 @@ func convertSize(size int64) string {
 
 // sortListOfEntities - сортировка списка сущностей
 func sortListOfEntities(listOfEntities []entityStruct, flag string) []entityStruct {
-	if flag == "desc" {
+	const asc = "asc"
+	const desc = "desc"
+	if flag == desc {
 		sort.Slice(listOfEntities, func(i, j int) bool { return listOfEntities[i].size > listOfEntities[j].size })
-	} else if flag == "asc" {
+	} else if flag == asc {
 		sort.Slice(listOfEntities, func(i, j int) bool { return listOfEntities[i].size < listOfEntities[j].size })
 	}
 	return listOfEntities
