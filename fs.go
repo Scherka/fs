@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"io/fs"
 	"os"
 	"sort"
 	"strings"
@@ -60,13 +61,14 @@ func output(listOfEntities []entityStruct) {
 
 // convertSize - конвертация размеров из байт
 func convertSize(size int64) string {
-	prefixes := []string{"byte", "kbyte", "mbyte", "gbyte"}
+	prefixes := []string{"byte", "kbyte", "mbyte", "gbyte", "tbyte"}
 	i := 0
-	for (size > 1000) && (i < 3) {
-		size = size / 1000
+	sizeFloat := float64(size)
+	for (sizeFloat > 1000) && (i < 4) {
+		sizeFloat = sizeFloat / 1000
 		i++
 	}
-	return fmt.Sprintf("%d %s", size, prefixes[i])
+	return fmt.Sprintf("%.2f %s", sizeFloat, prefixes[i])
 }
 
 // sortListOfEntities - сортировка списка сущностей
@@ -126,7 +128,7 @@ func getEntityParameters(path string) (entityStruct, error) {
 		entity.entityType = "Дир"
 		tempSize, err := getSizeOfDir(path)
 		if err != nil {
-			fmt.Printf("ошибка при чтении параметров %s :%v\r\n", file.Name(), err)
+			fmt.Printf("ошибка при чтении параметров директории %s :%v\r\n", file.Name(), err)
 
 		} else {
 			entity.size += tempSize
@@ -147,15 +149,13 @@ func getSizeOfDir(path string) (int64, error) {
 		return 0, fmt.Errorf("ошибка при чтении каталога %s: %v", path, err)
 	}
 	for _, entity := range entities {
-
 		//дополняем текущий путь новым файлом/папкой
 		fullPath := fmt.Sprintf("%s%s", formatDir(path), entity.Name())
 		fileStat, err := os.Lstat(fullPath)
 		if err != nil {
-			sizeOfDir = 0
+			sizeOfDir = 4000
 			fmt.Printf("ошибка при получении параметров %s: %v", path, err)
-		}
-		if fileStat.IsDir() {
+		} else if fileStat.IsDir() {
 			//если папка, то получаем её размер
 			tempSize, err := getSizeOfDir(fullPath)
 			if err != nil {
@@ -173,25 +173,25 @@ func getSizeOfDir(path string) (int64, error) {
 
 // getListOfEntitiesParameters - получение списка папок/файлов и их свойств в корневом катлоге
 func getListOfEntitiesParameters(root string) ([]entityStruct, error) {
-	listOfEntitiesParameters := make([]entityStruct, 0)
 	entities, err := os.ReadDir(root)
+	listOfEntitiesParameters := make([]entityStruct, len(entities))
 	if err != nil {
 		return nil, fmt.Errorf("ошибка при чтении каталога %s: %v", root, err)
 	}
 	//создаём группу ожидания
 	wg := sync.WaitGroup{}
-	for _, entity := range entities {
+	for i, entity := range entities {
 		wg.Add(1)
-		go func() {
+		go func(entity fs.DirEntry, i int) {
 			defer wg.Done()
 			//получаем параметры объекта
 			entityParameters, err := getEntityParameters(fmt.Sprintf("%s%s", root, entity.Name()))
 			if err != nil {
 				fmt.Printf("ошибка при чтении параметров %s :%v\r\n", entity.Name(), err)
 			} else {
-				listOfEntitiesParameters = append(listOfEntitiesParameters, entityParameters)
+				listOfEntitiesParameters[i] = entityParameters
 			}
-		}()
+		}(entity, i)
 	}
 	wg.Wait()
 	return listOfEntitiesParameters, nil
