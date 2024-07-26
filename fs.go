@@ -87,8 +87,6 @@ func sortListOfEntities(listOfEntities []entityStruct, flag string) []entityStru
 
 // flagParsing - обработка флагов
 func flagParsing() (string, string, error) {
-	const asc = "asc"
-	const desc = "desc"
 	//флаг каталога
 	root := flag.String("root", "", "используйте флаг -root для введения сканируемого каталога.")
 	//флаг сортировки
