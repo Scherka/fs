@@ -12,6 +12,17 @@ import (
 	"unicode/utf8"
 )
 
+// entitySruct - содержит имя, тип и размер папки/файла
+type entityStruct struct {
+	name       string //Имя объекта
+	entityType string //Тип объекта
+	size       int64  //Размер объекта в байтах
+}
+
+const asc = "asc"       //флаг сортировки по возрастанию
+const desc = "desc"     //флаг сортировки по убыванию
+const memoryBase = 1000 //основание конвертации памяти
+
 func main() {
 	//время начала программы
 	start := time.Now()
@@ -28,13 +39,6 @@ func main() {
 	//время выполнения программы
 	finish := time.Since(start).Truncate(10 * time.Millisecond).String()
 	fmt.Println("Время выполнения программы:", finish)
-}
-
-// entitySruct - содержит имя, тип и размер папки/файла
-type entityStruct struct {
-	name       string //Имя объекта
-	entityType string //Тип объекта
-	size       int64  //Размер объекта в байтах
 }
 
 // getMaxLenOfName - определить максимальную длину имени
@@ -64,8 +68,8 @@ func convertSize(size int64) string {
 	prefixes := []string{"byte", "kbyte", "mbyte", "gbyte", "tbyte"}
 	i := 0
 	sizeFloat := float64(size)
-	for (sizeFloat > 1000) && (i < 4) {
-		sizeFloat = sizeFloat / 1000
+	for (sizeFloat > memoryBase) && (i < 4) {
+		sizeFloat = sizeFloat / memoryBase
 		i++
 	}
 	return fmt.Sprintf("%.2f %s", sizeFloat, prefixes[i])
@@ -73,8 +77,6 @@ func convertSize(size int64) string {
 
 // sortListOfEntities - сортировка списка сущностей
 func sortListOfEntities(listOfEntities []entityStruct, flag string) []entityStruct {
-	const asc = "asc"
-	const desc = "desc"
 	if flag == desc {
 		sort.Slice(listOfEntities, func(i, j int) bool { return listOfEntities[i].size > listOfEntities[j].size })
 	} else if flag == asc {
@@ -90,7 +92,7 @@ func flagParsing() (string, string, error) {
 	//флаг каталога
 	root := flag.String("root", "", "используйте флаг -root для введения сканируемого каталога.")
 	//флаг сортировки
-	sort := flag.String("sort", "", "используйте флаг -sort для введения порядка сортировки: asc - по возрастанию, desc= по убыванию.")
+	sort := flag.String("sort", "", "используйте флаг -sort для введения порядка сортировки: asc - по возрастанию, desc - по убыванию.")
 	flag.Parse()
 	//проверка наличия флагов
 	if len(*root) == 0 {
@@ -155,14 +157,13 @@ func getSizeOfDir(path string) (int64, error) {
 		fullPath := fmt.Sprintf("%s%s", formatDir(path), entity.Name())
 		fileStat, err := os.Lstat(fullPath)
 		if err != nil {
-			sizeOfDir = 4000
 			fmt.Printf("ошибка при получении параметров %s: %v", path, err)
 		} else if fileStat.IsDir() {
 			//если папка, то получаем её размер
 			tempSize, err := getSizeOfDir(fullPath)
 			if err != nil {
 				fmt.Printf("ошибка при чтении парметров %s :%v\r\n", entity.Name(), err)
-				sizeOfDir = 4000
+				sizeOfDir = 4 * memoryBase
 			}
 			sizeOfDir += tempSize
 		} else {
@@ -184,7 +185,7 @@ func getListOfEntitiesParameters(root string) ([]entityStruct, error) {
 	wg := sync.WaitGroup{}
 	for i, entity := range entities {
 		wg.Add(1)
-		go func(entity fs.DirEntry, i int) {
+		go func(root string, listOfEntitiesParameters []entityStruct, entity fs.DirEntry, i int) {
 			defer wg.Done()
 			//получаем параметры объекта
 			entityParameters, err := getEntityParameters(fmt.Sprintf("%s%s", root, entity.Name()))
@@ -193,7 +194,7 @@ func getListOfEntitiesParameters(root string) ([]entityStruct, error) {
 			} else {
 				listOfEntitiesParameters[i] = entityParameters
 			}
-		}(entity, i)
+		}(root, listOfEntitiesParameters, entity, i)
 	}
 	wg.Wait()
 	return listOfEntitiesParameters, nil
