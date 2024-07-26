@@ -1,5 +1,5 @@
 *
 !.gitignore
 !fs.go
-!port.env 
+!.env 
 !*/

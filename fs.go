@@ -24,27 +24,38 @@ type entityStruct struct {
 	SizeFormatted string `json:"Размер"` //Форматированный размер объекта
 }
 
+// envParam - переменная окружения
+type envParam struct {
+	key   string //ключ
+	value string //значение
+}
+
 const asc = "asc"       //флаг сортировки по возрастанию
 const desc = "desc"     //флаг сортировки по убыванию
 const memoryBase = 1000 //основание конвертации памяти
 
 func main() {
-	//https://localhost/fs?root=/home/sergey&sort=asc
-	envParameters()
 	http.HandleFunc("/fs", func(res http.ResponseWriter, req *http.Request) { handler(res, req) })
 	http.ListenAndServe(os.Getenv("HTTP_PORT"), nil)
 
 }
 
-// envParameters - получение переменной окружения из port.env
-func envParameters() {
-	file, _ := os.Open("port.env")
+// envParameters - получение переменной окружения из .env
+func envParameters() error {
+	file, err := os.Open(".env")
+	if err != nil {
+		return fmt.Errorf("ошибка при открытии файла с переменными окружения: %v", err)
+	}
 	defer file.Close()
+	var envVar envParam
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
+		envVar.key = splitEnvParam(strings.ReplaceAll(scanner.Text(), " ", ""))[0]
+		envVar.value = splitEnvParam(strings.ReplaceAll(scanner.Text(), " ", ""))[1]
 		os.Setenv(splitEnvParam(strings.ReplaceAll(scanner.Text(), " ", ""))[0],
 			splitEnvParam(strings.ReplaceAll(scanner.Text(), " ", ""))[1])
 	}
+	return nil
 }
 
 // splitEnvParam - разбиение строки из .env
@@ -54,29 +65,34 @@ func splitEnvParam(param string) []string {
 }
 func handler(res http.ResponseWriter, req *http.Request) {
 	//время начала программы
-	start := time.Now()
-	//получение списка объектов
-	root := req.FormValue("root")
-	sort := req.FormValue("sort")
-	err := checkFlags(root, sort)
-	switch err {
-	case nil:
-		listOfEntities, err := getListOfEntitiesParameters(formatDir(root), res)
-		if err != nil {
-			io.WriteString(res, fmt.Sprintf("ошибка при обработке запроса:%v\r\n", err))
+	err := envParameters()
+	if err != nil {
+		io.WriteString(res, fmt.Sprintf("ошибка при обработке запроса:%v\r\n", err))
+	} else {
+		start := time.Now()
+		//получение списка объектов
+		root := req.FormValue("root")
+		sort := req.FormValue("sort")
+		err = checkFlags(root, sort)
+		switch err {
+		case nil:
+			listOfEntities, err := getListOfEntitiesParameters(formatDir(root), res)
+			if err != nil {
+				io.WriteString(res, fmt.Sprintf("ошибка при обработке запроса:%v\r\n", err))
+			}
+			//создание json-файла
+			fileJSON, err := encodeJSON(sortListOfEntities(listOfEntities, req.FormValue("sort")))
+			if err != nil {
+				io.WriteString(res, fmt.Sprintf("ошибка при обработке запроса:%v\r\n", err))
+			}
+			//вывод json на страницу
+			io.WriteString(res, fmt.Sprintf("%s\n", string(fileJSON)))
+			//время выполнения программы
+			finish := time.Since(start).Truncate(10 * time.Millisecond).String()
+			io.WriteString(res, fmt.Sprintf("Время выполнения завроса: %s", finish))
+		default:
+			io.WriteString(res, fmt.Sprintf("%v", err))
 		}
-		//создание json-файла
-		fileJSON, err := encodeJSON(sortListOfEntities(listOfEntities, req.FormValue("sort")))
-		if err != nil {
-			io.WriteString(res, fmt.Sprintf("ошибка при обработке запроса:%v\r\n", err))
-		}
-		//вывод json на страницу
-		io.WriteString(res, fmt.Sprintf("%s\n", string(fileJSON)))
-		//время выполнения программы
-		finish := time.Since(start).Truncate(10 * time.Millisecond).String()
-		io.WriteString(res, fmt.Sprintf("Время выполнения завроса: %s", finish))
-	default:
-		io.WriteString(res, fmt.Sprintf("%v", err))
 	}
 }
 
