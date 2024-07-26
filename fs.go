@@ -81,7 +81,8 @@ func sortListOfEntities(listOfEntities []entityStruct, flag string) []entityStru
 
 // flagParsing - обработка флагов
 func flagParsing() (string, string, error) {
-
+	const asc = "asc"
+	const desc = "desc"
 	//флаг каталога
 	root := flag.String("root", "", "используйте флаг -root для введения сканируемого каталога.")
 	//флаг сортировки
@@ -96,7 +97,7 @@ func flagParsing() (string, string, error) {
 		flag.PrintDefaults()
 		return "", "", fmt.Errorf("отстутствуют необходимые флаги: -sort")
 	}
-	if *sort != "asc" && *sort != "desc" {
+	if *sort != asc && *sort != desc {
 		flag.PrintDefaults()
 		return "", "", fmt.Errorf("флаг -sort задан в неверном формате")
 	}
@@ -145,35 +146,28 @@ func getSizeOfDir(path string) (int64, error) {
 	if err != nil {
 		return 0, fmt.Errorf("ошибка при чтении каталога %s: %v", path, err)
 	}
-	//создаём группу ожидания
-	wg := sync.WaitGroup{}
 	for _, entity := range entities {
-		wg.Add(1)
-		go func() (int64, error) {
-			defer wg.Done()
-			//дополняем текущий путь новым файлом/папкой
-			fullPath := fmt.Sprintf("%s%s", formatDir(path), entity.Name())
-			fileStat, errMain := os.Lstat(fullPath)
-			if err != nil {
-				sizeOfDir = 0
-				fmt.Printf("ошибка при получении параметров %s: %v", path, err)
-			}
-			if fileStat.IsDir() {
-				//если папка, то получаем её размер
-				tempSize, err := getSizeOfDir(fullPath)
-				if err != nil {
-					fmt.Printf("ошибка при чтении парметров %s :%v\r\n", entity.Name(), err)
-					sizeOfDir = 4000
-				}
-				sizeOfDir += tempSize
-			} else {
-				sizeOfDir += fileStat.Size()
 
+		//дополняем текущий путь новым файлом/папкой
+		fullPath := fmt.Sprintf("%s%s", formatDir(path), entity.Name())
+		fileStat, err := os.Lstat(fullPath)
+		if err != nil {
+			sizeOfDir = 0
+			fmt.Printf("ошибка при получении параметров %s: %v", path, err)
+		}
+		if fileStat.IsDir() {
+			//если папка, то получаем её размер
+			tempSize, err := getSizeOfDir(fullPath)
+			if err != nil {
+				fmt.Printf("ошибка при чтении парметров %s :%v\r\n", entity.Name(), err)
+				sizeOfDir = 4000
 			}
-			return sizeOfDir, errMain
-		}()
+			sizeOfDir += tempSize
+		} else {
+			sizeOfDir += fileStat.Size()
+
+		}
 	}
-	wg.Wait()
 	return sizeOfDir, nil
 }
 
