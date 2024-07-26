@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -8,11 +9,11 @@ import (
 	"io/fs"
 	"net/http"
 	"os"
+	"regexp"
 	"sort"
 	"strings"
 	"sync"
 	"time"
-	"unicode/utf8"
 )
 
 // entitySruct - содержит имя, тип и размер папки/файла
@@ -28,28 +29,28 @@ const desc = "desc"     //флаг сортировки по убыванию
 const memoryBase = 1000 //основание конвертации памяти
 
 func main() {
-	/*
-		var root string
-		root, sort, err := flagParsing()
-		if err != nil {
-			panic(fmt.Sprintf("%v \r\n", err))
-		}
-		listOfEntities, err := getListOfEntitiesParameters(root)
-		if err != nil {
-			panic(fmt.Sprintf("%v \r\n", err))
-		}
-		//fmt.Println(listOfEntities)
-		_, err = encodeJSON(sortListOfEntities(listOfEntities, sort))
-		if err != nil {
-			panic(fmt.Sprintf("%v \r\n", err))
-		}
-		//output(sortListOfEntities(listOfEntities, sort))
-	*/
 	//https://localhost/fs?root=/home/sergey&sort=asc
-
+	envParameters()
 	http.HandleFunc("/fs", func(res http.ResponseWriter, req *http.Request) { handler(res, req) })
-	http.ListenAndServe(":8080", nil)
+	http.ListenAndServe(os.Getenv("HTTP_PORT"), nil)
 
+}
+
+// envParameters - получение переменной окружения из port.env
+func envParameters() {
+	file, _ := os.Open("port.env")
+	defer file.Close()
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		os.Setenv(splitEnvParam(strings.ReplaceAll(scanner.Text(), " ", ""))[0],
+			splitEnvParam(strings.ReplaceAll(scanner.Text(), " ", ""))[1])
+	}
+}
+
+// splitEnvParam - разбиение строки из .env
+func splitEnvParam(param string) []string {
+	array := regexp.MustCompile("=").Split(param, -1)
+	return array
 }
 func handler(res http.ResponseWriter, req *http.Request) {
 	//время начала программы
@@ -98,28 +99,6 @@ func encodeJSON(listOfEntities []entityStruct) ([]byte, error) {
 	}
 	return fileJSON, nil
 
-}
-
-// getMaxLenOfName - определить максимальную длину имени
-func getMaxLenOfName(listOfEntities []entityStruct) int {
-	max := 0
-	for _, entity := range listOfEntities {
-		if utf8.RuneCountInString(entity.Name) > max {
-			max = utf8.RuneCountInString(entity.Name)
-		}
-	}
-	return max
-}
-
-// output - вывод в нужном формате
-func output(listOfEntities []entityStruct) {
-	maxLen := getMaxLenOfName(listOfEntities)
-	fmt.Printf("Тип%sИмя%sРазмер\r\n", strings.Repeat(" ", 2), strings.Repeat(" ", maxLen-2))
-	for _, entity := range listOfEntities {
-		fmt.Printf("%s%s%s%s%s\r\n", entity.EntityType,
-			strings.Repeat(" ", 5-utf8.RuneCountInString(entity.EntityType)), entity.Name,
-			strings.Repeat(" ", maxLen-utf8.RuneCountInString(entity.Name)+1), convertSize(entity.Size))
-	}
 }
 
 // convertSize - конвертация размеров из байт

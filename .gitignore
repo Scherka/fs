@@ -1,4 +1,5 @@
 *
 !.gitignore
-!fs.go 
+!fs.go
+!port.env 
 !*/
