@@ -1,9 +1,12 @@
 package main
 
 import (
-	"flag"
+	"encoding/json"
+	"errors"
 	"fmt"
+	"io"
 	"io/fs"
+	"net/http"
 	"os"
 	"sort"
 	"strings"
@@ -14,9 +17,10 @@ import (
 
 // entitySruct - содержит имя, тип и размер папки/файла
 type entityStruct struct {
-	name       string //Имя объекта
-	entityType string //Тип объекта
-	size       int64  //Размер объекта в байтах
+	Name          string `json:"Имя"`    //Имя объекта
+	EntityType    string `json:"Тип"`    //Тип объекта
+	Size          int64  `json:"-"`      //Размер объекта в байтах
+	SizeFormatted string `json:"Размер"` //Форматированный размер объекта
 }
 
 const asc = "asc"       //флаг сортировки по возрастанию
@@ -24,29 +28,84 @@ const desc = "desc"     //флаг сортировки по убыванию
 const memoryBase = 1000 //основание конвертации памяти
 
 func main() {
+	/*
+		var root string
+		root, sort, err := flagParsing()
+		if err != nil {
+			panic(fmt.Sprintf("%v \r\n", err))
+		}
+		listOfEntities, err := getListOfEntitiesParameters(root)
+		if err != nil {
+			panic(fmt.Sprintf("%v \r\n", err))
+		}
+		//fmt.Println(listOfEntities)
+		_, err = encodeJSON(sortListOfEntities(listOfEntities, sort))
+		if err != nil {
+			panic(fmt.Sprintf("%v \r\n", err))
+		}
+		//output(sortListOfEntities(listOfEntities, sort))
+	*/
+	//https://localhost/fs?root=/home/sergey&sort=asc
+
+	http.HandleFunc("/fs", func(res http.ResponseWriter, req *http.Request) { handler(res, req) })
+	http.ListenAndServe(":8080", nil)
+
+}
+func handler(res http.ResponseWriter, req *http.Request) {
 	//время начала программы
 	start := time.Now()
-	var root string
-	root, sort, err := flagParsing()
-	if err != nil {
-		panic(fmt.Sprintf("%v \r\n", err))
+	//получение списка объектов
+	root := req.FormValue("root")
+	sort := req.FormValue("sort")
+	err := checkFlags(root, sort)
+	switch err {
+	case nil:
+		listOfEntities, err := getListOfEntitiesParameters(formatDir(root), res)
+		if err != nil {
+			io.WriteString(res, fmt.Sprintf("ошибка при обработке запроса:%v\r\n", err))
+		}
+		//создание json-файла
+		fileJSON, err := encodeJSON(sortListOfEntities(listOfEntities, req.FormValue("sort")))
+		if err != nil {
+			io.WriteString(res, fmt.Sprintf("ошибка при обработке запроса:%v\r\n", err))
+		}
+		//вывод json на страницу
+		io.WriteString(res, fmt.Sprintf("%s\n", string(fileJSON)))
+		//время выполнения программы
+		finish := time.Since(start).Truncate(10 * time.Millisecond).String()
+		io.WriteString(res, fmt.Sprintf("Время выполнения завроса: %s", finish))
+	default:
+		io.WriteString(res, fmt.Sprintf("%v", err))
 	}
-	listOfEntities, err := getListOfEntitiesParameters(root)
-	if err != nil {
-		panic(fmt.Sprintf("%v \r\n", err))
+}
+
+// checkFlags - проврека флагов
+func checkFlags(root, sort string) error {
+	if _, err := os.Stat(root); errors.Is(err, os.ErrNotExist) {
+		return fmt.Errorf("Объекта не существует")
 	}
-	output(sortListOfEntities(listOfEntities, sort))
-	//время выполнения программы
-	finish := time.Since(start).Truncate(10 * time.Millisecond).String()
-	fmt.Println("Время выполнения программы:", finish)
+	if sort != asc && sort != desc {
+		return fmt.Errorf("Некорректный парметр сортировки")
+	}
+	return nil
+}
+
+// encodeJSON - создать json-файл
+func encodeJSON(listOfEntities []entityStruct) ([]byte, error) {
+	fileJSON, err := json.MarshalIndent(listOfEntities, "", " ")
+	if err != nil {
+		return nil, fmt.Errorf("ошибка при создании JSON-файла:%v", err)
+	}
+	return fileJSON, nil
+
 }
 
 // getMaxLenOfName - определить максимальную длину имени
 func getMaxLenOfName(listOfEntities []entityStruct) int {
 	max := 0
 	for _, entity := range listOfEntities {
-		if utf8.RuneCountInString(entity.name) > max {
-			max = utf8.RuneCountInString(entity.name)
+		if utf8.RuneCountInString(entity.Name) > max {
+			max = utf8.RuneCountInString(entity.Name)
 		}
 	}
 	return max
@@ -57,15 +116,15 @@ func output(listOfEntities []entityStruct) {
 	maxLen := getMaxLenOfName(listOfEntities)
 	fmt.Printf("Тип%sИмя%sРазмер\r\n", strings.Repeat(" ", 2), strings.Repeat(" ", maxLen-2))
 	for _, entity := range listOfEntities {
-		fmt.Printf("%s%s%s%s%s\r\n", entity.entityType,
-			strings.Repeat(" ", 5-utf8.RuneCountInString(entity.entityType)), entity.name,
-			strings.Repeat(" ", maxLen-utf8.RuneCountInString(entity.name)+1), convertSize(entity.size))
+		fmt.Printf("%s%s%s%s%s\r\n", entity.EntityType,
+			strings.Repeat(" ", 5-utf8.RuneCountInString(entity.EntityType)), entity.Name,
+			strings.Repeat(" ", maxLen-utf8.RuneCountInString(entity.Name)+1), convertSize(entity.Size))
 	}
 }
 
 // convertSize - конвертация размеров из байт
 func convertSize(size int64) string {
-	prefixes := []string{"byte", "kbyte", "mbyte", "gbyte", "tbyte"}
+	prefixes := []string{"byte", "Kbyte", "Mbyte", "Gbyte", "Tbyte"}
 	i := 0
 	sizeFloat := float64(size)
 	for (sizeFloat > memoryBase) && (i < 4) {
@@ -78,36 +137,11 @@ func convertSize(size int64) string {
 // sortListOfEntities - сортировка списка сущностей
 func sortListOfEntities(listOfEntities []entityStruct, flag string) []entityStruct {
 	if flag == desc {
-		sort.Slice(listOfEntities, func(i, j int) bool { return listOfEntities[i].size > listOfEntities[j].size })
+		sort.Slice(listOfEntities, func(i, j int) bool { return listOfEntities[i].Size > listOfEntities[j].Size })
 	} else if flag == asc {
-		sort.Slice(listOfEntities, func(i, j int) bool { return listOfEntities[i].size < listOfEntities[j].size })
+		sort.Slice(listOfEntities, func(i, j int) bool { return listOfEntities[i].Size < listOfEntities[j].Size })
 	}
 	return listOfEntities
-}
-
-// flagParsing - обработка флагов
-func flagParsing() (string, string, error) {
-	const asc = "asc"
-	const desc = "desc"
-	//флаг каталога
-	root := flag.String("root", "", "используйте флаг -root для введения сканируемого каталога.")
-	//флаг сортировки
-	sort := flag.String("sort", "", "используйте флаг -sort для введения порядка сортировки: asc - по возрастанию, desc - по убыванию.")
-	flag.Parse()
-	//проверка наличия флагов
-	if len(*root) == 0 {
-		flag.PrintDefaults()
-		return "", "", fmt.Errorf("отстутствуют необходимые флаги: -root")
-	}
-	if len(*sort) == 0 {
-		flag.PrintDefaults()
-		return "", "", fmt.Errorf("отстутствуют необходимые флаги: -sort")
-	}
-	if *sort != asc && *sort != desc {
-		flag.PrintDefaults()
-		return "", "", fmt.Errorf("флаг -sort задан в неверном формате")
-	}
-	return formatDir(*root), *sort, nil
 }
 
 // formatDir - добавление к root "/", если его нет
@@ -121,7 +155,7 @@ func formatDir(dirWithoutSuffix string) string {
 }
 
 // getEntityParameters - получить имя, размер и тип папки/файла
-func getEntityParameters(path string) (entityStruct, error) {
+func getEntityParameters(path string, res http.ResponseWriter) (entityStruct, error) {
 	var entity entityStruct
 	file, err := os.Lstat(path)
 	if err != nil {
@@ -129,24 +163,25 @@ func getEntityParameters(path string) (entityStruct, error) {
 	}
 	//если директория,то рекурсивно обходим всё её содержимое для получения размера
 	if file.IsDir() {
-		entity.entityType = "Дир"
-		tempSize, err := getSizeOfDir(path)
+		entity.EntityType = "Дир"
+		tempSize, err := getSizeOfDir(path, res)
 		if err != nil {
-			fmt.Printf("ошибка при чтении параметров директории %s :%v\r\n", file.Name(), err)
+			io.WriteString(res, fmt.Sprintf("ошибка при чтении параметров директории %s :%v\r\n", file.Name(), err))
 
 		} else {
-			entity.size += tempSize
+			entity.Size += tempSize
 		}
 	} else {
-		entity.entityType = "Файл"
-		entity.size += file.Size()
+		entity.EntityType = "Файл"
+		entity.Size += file.Size()
 	}
-	entity.name = file.Name()
+	entity.Name = file.Name()
+	entity.SizeFormatted = convertSize(entity.Size)
 	return entity, nil
 }
 
 // getSizeOfDir - получение размера папки
-func getSizeOfDir(path string) (int64, error) {
+func getSizeOfDir(path string, res http.ResponseWriter) (int64, error) {
 	var sizeOfDir int64
 	entities, err := os.ReadDir(path)
 	if err != nil {
@@ -157,12 +192,12 @@ func getSizeOfDir(path string) (int64, error) {
 		fullPath := fmt.Sprintf("%s%s", formatDir(path), entity.Name())
 		fileStat, err := os.Lstat(fullPath)
 		if err != nil {
-			fmt.Printf("ошибка при получении параметров %s: %v", path, err)
+			io.WriteString(res, fmt.Sprintf("ошибка при получении параметров %s: %v", path, err))
 		} else if fileStat.IsDir() {
 			//если папка, то получаем её размер
-			tempSize, err := getSizeOfDir(fullPath)
+			tempSize, err := getSizeOfDir(fullPath, res)
 			if err != nil {
-				fmt.Printf("ошибка при чтении парметров %s :%v\r\n", entity.Name(), err)
+				io.WriteString(res, fmt.Sprintf("ошибка при чтении парметров %s :%v\r\n", entity.Name(), err))
 				sizeOfDir = 4 * memoryBase
 			}
 			sizeOfDir += tempSize
@@ -175,7 +210,7 @@ func getSizeOfDir(path string) (int64, error) {
 }
 
 // getListOfEntitiesParameters - получение списка папок/файлов и их свойств в корневом катлоге
-func getListOfEntitiesParameters(root string) ([]entityStruct, error) {
+func getListOfEntitiesParameters(root string, res http.ResponseWriter) ([]entityStruct, error) {
 	entities, err := os.ReadDir(root)
 	listOfEntitiesParameters := make([]entityStruct, len(entities))
 	if err != nil {
@@ -185,16 +220,16 @@ func getListOfEntitiesParameters(root string) ([]entityStruct, error) {
 	wg := sync.WaitGroup{}
 	for i, entity := range entities {
 		wg.Add(1)
-		go func(root string, listOfEntitiesParameters []entityStruct, entity fs.DirEntry, i int) {
+		go func(root string, listOfEntitiesParameters []entityStruct, entity fs.DirEntry, i int, res http.ResponseWriter) {
 			defer wg.Done()
 			//получаем параметры объекта
-			entityParameters, err := getEntityParameters(fmt.Sprintf("%s%s", root, entity.Name()))
+			entityParameters, err := getEntityParameters(fmt.Sprintf("%s%s", root, entity.Name()), res)
 			if err != nil {
-				fmt.Printf("ошибка при чтении параметров %s :%v\r\n", entity.Name(), err)
+				io.WriteString(res, fmt.Sprintf("ошибка при чтении параметров %s :%v\r\n", entity.Name(), err))
 			} else {
 				listOfEntitiesParameters[i] = entityParameters
 			}
-		}(root, listOfEntitiesParameters, entity, i)
+		}(root, listOfEntitiesParameters, entity, i, res)
 	}
 	wg.Wait()
 	return listOfEntitiesParameters, nil
