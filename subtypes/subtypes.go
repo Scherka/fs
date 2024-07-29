@@ -10,10 +10,10 @@ type EntityStruct struct {
 
 // envParam - переменная окружения
 type EnvParam struct {
-	Value string //значение
+	Port string //значение
 }
 
-var Port EnvParam
+var ConfigParam EnvParam
 
 const Asc = "asc"       //флаг сортировки по возрастанию
 const Desc = "desc"     //флаг сортировки по убыванию

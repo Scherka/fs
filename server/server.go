@@ -24,11 +24,11 @@ func ServerStart() {
 		fmt.Printf("ошибка при обработке запроса:%v\r\n", err)
 	}
 	server := &http.Server{
-		Addr: subtypes.Port.Value,
+		Addr: subtypes.ConfigParam.Port,
 	}
 
 	http.HandleFunc("/fs", funcHandler)
-	fmt.Printf("Сервер запускается на порте: %s", subtypes.Port.Value)
+	fmt.Printf("Сервер запускается на порте: %s", subtypes.ConfigParam.Port)
 	go func() {
 		if err := server.ListenAndServe(); !errors.Is(err, http.ErrServerClosed) {
 			fmt.Printf("Ошибка сервера: %v", err)

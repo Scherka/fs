@@ -12,7 +12,7 @@ import (
 	"github.com/Scherka/fs/tree/server/fs/subtypes"
 )
 
-// envParameters - получение переменной окружения из .env
+// EnvParameters - получение переменной окружения из .env
 func EnvParameters() error {
 	file, err := os.Open(".env")
 	if err != nil {
@@ -22,7 +22,7 @@ func EnvParameters() error {
 
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
-		subtypes.Port.Value = splitEnvParam(strings.ReplaceAll(scanner.Text(), " ", ""))[1]
+		subtypes.ConfigParam.Port = splitEnvParam(strings.ReplaceAll(scanner.Text(), " ", ""))[1]
 	}
 	return nil
 }
