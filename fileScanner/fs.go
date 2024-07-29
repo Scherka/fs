@@ -1,13 +1,11 @@
-package fs
+package fileScanner
 
 import (
-	"errors"
 	"fmt"
 	"io"
 	"io/fs"
 	"net/http"
 	"os"
-
 	"sort"
 	"strings"
 	"sync"
@@ -22,25 +20,14 @@ type entityStruct struct {
 }
 
 // envParam - переменная окружения
-type envParam struct {
-	key   string //ключ
-	value string //значение
+type EnvParam struct {
+	Key   string //ключ
+	Value string //значение
 }
 
-const asc = "asc"       //флаг сортировки по возрастанию
-const desc = "desc"     //флаг сортировки по убыванию
+const Asc = "asc"       //флаг сортировки по возрастанию
+const Desc = "desc"     //флаг сортировки по убыванию
 const memoryBase = 1000 //основание конвертации памяти
-
-// checkFlags - проврека флагов
-func checkFlags(root, sort string) error {
-	if _, err := os.Stat(root); errors.Is(err, os.ErrNotExist) {
-		return fmt.Errorf("Объекта не существует")
-	}
-	if sort != asc && sort != desc {
-		return fmt.Errorf("Некорректный парметр сортировки")
-	}
-	return nil
-}
 
 // convertSize - конвертация размеров из байт
 func convertSize(size int64) string {
@@ -56,9 +43,9 @@ func convertSize(size int64) string {
 
 // sortListOfEntities - сортировка списка сущностей
 func sortListOfEntities(listOfEntities []entityStruct, flag string) []entityStruct {
-	if flag == desc {
+	if flag == Desc {
 		sort.Slice(listOfEntities, func(i, j int) bool { return listOfEntities[i].Size > listOfEntities[j].Size })
-	} else if flag == asc {
+	} else if flag == Asc {
 		sort.Slice(listOfEntities, func(i, j int) bool { return listOfEntities[i].Size < listOfEntities[j].Size })
 	}
 	return listOfEntities
@@ -130,7 +117,8 @@ func getSizeOfDir(path string, res http.ResponseWriter) (int64, error) {
 }
 
 // getListOfEntitiesParameters - получение списка папок/файлов и их свойств в корневом катлоге
-func getListOfEntitiesParameters(root string, res http.ResponseWriter) ([]entityStruct, error) {
+func GetListOfEntitiesParameters(root string, res http.ResponseWriter, sort string) ([]entityStruct, error) {
+	root = formatDir(root)
 	entities, err := os.ReadDir(root)
 	listOfEntitiesParameters := make([]entityStruct, len(entities))
 	if err != nil {
@@ -152,5 +140,5 @@ func getListOfEntitiesParameters(root string, res http.ResponseWriter) ([]entity
 		}(root, listOfEntitiesParameters, entity, i, res)
 	}
 	wg.Wait()
-	return listOfEntitiesParameters, nil
+	return sortListOfEntities(listOfEntitiesParameters, sort), nil
 }
