@@ -2,50 +2,32 @@ package fileScanner
 
 import (
 	"fmt"
-	"io"
 	"io/fs"
-	"net/http"
 	"os"
 	"sort"
 	"strings"
 	"sync"
+
+	"github.com/Scherka/fs/tree/server/fs/subtypes"
 )
-
-// entitySruct - содержит имя, тип и размер папки/файла
-type entityStruct struct {
-	Name          string `json:"Имя"`    //Имя объекта
-	EntityType    string `json:"Тип"`    //Тип объекта
-	Size          int64  `json:"-"`      //Размер объекта в байтах
-	SizeFormatted string `json:"Размер"` //Форматированный размер объекта
-}
-
-// envParam - переменная окружения
-type EnvParam struct {
-	Key   string //ключ
-	Value string //значение
-}
-
-const Asc = "asc"       //флаг сортировки по возрастанию
-const Desc = "desc"     //флаг сортировки по убыванию
-const memoryBase = 1000 //основание конвертации памяти
 
 // convertSize - конвертация размеров из байт
 func convertSize(size int64) string {
 	prefixes := []string{"byte", "Kbyte", "Mbyte", "Gbyte", "Tbyte"}
 	i := 0
 	sizeFloat := float64(size)
-	for (sizeFloat > memoryBase) && (i < 4) {
-		sizeFloat = sizeFloat / memoryBase
+	for (sizeFloat > subtypes.MemoryBase) && (i < 4) {
+		sizeFloat = sizeFloat / subtypes.MemoryBase
 		i++
 	}
 	return fmt.Sprintf("%.2f %s", sizeFloat, prefixes[i])
 }
 
 // sortListOfEntities - сортировка списка сущностей
-func sortListOfEntities(listOfEntities []entityStruct, flag string) []entityStruct {
-	if flag == Desc {
+func sortListOfEntities(listOfEntities []subtypes.EntityStruct, flag string) []subtypes.EntityStruct {
+	if flag == subtypes.Desc {
 		sort.Slice(listOfEntities, func(i, j int) bool { return listOfEntities[i].Size > listOfEntities[j].Size })
-	} else if flag == Asc {
+	} else if flag == subtypes.Asc {
 		sort.Slice(listOfEntities, func(i, j int) bool { return listOfEntities[i].Size < listOfEntities[j].Size })
 	}
 	return listOfEntities
@@ -62,8 +44,8 @@ func formatDir(dirWithoutSuffix string) string {
 }
 
 // getEntityParameters - получить имя, размер и тип папки/файла
-func getEntityParameters(path string, res http.ResponseWriter) (entityStruct, error) {
-	var entity entityStruct
+func getEntityParameters(path string) (subtypes.EntityStruct, error) {
+	var entity subtypes.EntityStruct
 	file, err := os.Lstat(path)
 	if err != nil {
 		return entity, fmt.Errorf("ошибка при получении параметров %s: %v", path, err)
@@ -71,9 +53,9 @@ func getEntityParameters(path string, res http.ResponseWriter) (entityStruct, er
 	//если директория,то рекурсивно обходим всё её содержимое для получения размера
 	if file.IsDir() {
 		entity.EntityType = "Дир"
-		tempSize, err := getSizeOfDir(path, res)
+		tempSize, err := getSizeOfDir(path)
 		if err != nil {
-			io.WriteString(res, fmt.Sprintf("ошибка при чтении параметров директории %s :%v\r\n", file.Name(), err))
+			fmt.Printf("ошибка при чтении параметров директории %s :%v\r\n", file.Name(), err)
 
 		} else {
 			entity.Size += tempSize
@@ -88,7 +70,7 @@ func getEntityParameters(path string, res http.ResponseWriter) (entityStruct, er
 }
 
 // getSizeOfDir - получение размера папки
-func getSizeOfDir(path string, res http.ResponseWriter) (int64, error) {
+func getSizeOfDir(path string) (int64, error) {
 	var sizeOfDir int64
 	entities, err := os.ReadDir(path)
 	if err != nil {
@@ -99,13 +81,13 @@ func getSizeOfDir(path string, res http.ResponseWriter) (int64, error) {
 		fullPath := fmt.Sprintf("%s%s", formatDir(path), entity.Name())
 		fileStat, err := os.Lstat(fullPath)
 		if err != nil {
-			io.WriteString(res, fmt.Sprintf("ошибка при получении параметров %s: %v", path, err))
+			fmt.Printf("ошибка при получении параметров %s: %v", path, err)
 		} else if fileStat.IsDir() {
 			//если папка, то получаем её размер
-			tempSize, err := getSizeOfDir(fullPath, res)
+			tempSize, err := getSizeOfDir(fullPath)
 			if err != nil {
-				io.WriteString(res, fmt.Sprintf("ошибка при чтении парметров %s :%v\r\n", entity.Name(), err))
-				sizeOfDir = 4 * memoryBase
+				fmt.Printf("ошибка при чтении парметров %s :%v\r\n", entity.Name(), err)
+				sizeOfDir = 4 * subtypes.MemoryBase
 			}
 			sizeOfDir += tempSize
 		} else {
@@ -117,10 +99,10 @@ func getSizeOfDir(path string, res http.ResponseWriter) (int64, error) {
 }
 
 // getListOfEntitiesParameters - получение списка папок/файлов и их свойств в корневом катлоге
-func GetListOfEntitiesParameters(root string, res http.ResponseWriter, sort string) ([]entityStruct, error) {
+func GetListOfEntitiesParameters(root string, sort string) ([]subtypes.EntityStruct, error) {
 	root = formatDir(root)
 	entities, err := os.ReadDir(root)
-	listOfEntitiesParameters := make([]entityStruct, len(entities))
+	listOfEntitiesParameters := make([]subtypes.EntityStruct, len(entities))
 	if err != nil {
 		return nil, fmt.Errorf("ошибка при чтении каталога %s: %v", root, err)
 	}
@@ -128,16 +110,16 @@ func GetListOfEntitiesParameters(root string, res http.ResponseWriter, sort stri
 	wg := sync.WaitGroup{}
 	for i, entity := range entities {
 		wg.Add(1)
-		go func(root string, listOfEntitiesParameters []entityStruct, entity fs.DirEntry, i int, res http.ResponseWriter) {
+		go func(root string, listOfEntitiesParameters []subtypes.EntityStruct, entity fs.DirEntry, i int) {
 			defer wg.Done()
 			//получаем параметры объекта
-			entityParameters, err := getEntityParameters(fmt.Sprintf("%s%s", root, entity.Name()), res)
+			entityParameters, err := getEntityParameters(fmt.Sprintf("%s%s", root, entity.Name()))
 			if err != nil {
-				io.WriteString(res, fmt.Sprintf("ошибка при чтении параметров %s :%v\r\n", entity.Name(), err))
+				fmt.Printf("ошибка при чтении параметров %s :%v\r\n", entity.Name(), err)
 			} else {
 				listOfEntitiesParameters[i] = entityParameters
 			}
-		}(root, listOfEntitiesParameters, entity, i, res)
+		}(root, listOfEntitiesParameters, entity, i)
 	}
 	wg.Wait()
 	return sortListOfEntities(listOfEntitiesParameters, sort), nil

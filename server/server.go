@@ -1,7 +1,6 @@
 package server
 
 import (
-	"bufio"
 	"context"
 	"encoding/json"
 	"errors"
@@ -10,26 +9,26 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
-	"regexp"
-	"strings"
 	"syscall"
 	"time"
 
+	"github.com/Scherka/fs/tree/server/fs/config"
 	"github.com/Scherka/fs/tree/server/fs/fileScanner"
+	"github.com/Scherka/fs/tree/server/fs/subtypes"
 )
 
 // ServerStart - запуск сервера
 func ServerStart() {
-	err := envParameters()
+	err := config.EnvParameters()
 	if err != nil {
 		fmt.Printf("ошибка при обработке запроса:%v\r\n", err)
 	}
 	server := &http.Server{
-		Addr: os.Getenv("HTTP_PORT"),
+		Addr: subtypes.Port.Value,
 	}
 
 	http.HandleFunc("/fs", funcHandler)
-	fmt.Println("Сервер запускается")
+	fmt.Printf("Сервер запускается на порте: %s", subtypes.Port.Value)
 	go func() {
 		if err := server.ListenAndServe(); !errors.Is(err, http.ErrServerClosed) {
 			fmt.Printf("Ошибка сервера: %v", err)
@@ -49,24 +48,26 @@ func ServerStart() {
 	fmt.Println("Сервер остановлен.")
 }
 
-// checkFlags - проврека флагов
-func checkFlags(root, sort string) error {
+// validateFlags - проврека флагов
+func validateFlags(root, sort string) error {
 	if _, err := os.Stat(root); errors.Is(err, os.ErrNotExist) {
-		return fmt.Errorf("Объекта не существует")
+		return fmt.Errorf("По данному пути ничего нет")
 	}
-	if sort != fileScanner.Asc && sort != fileScanner.Desc {
+	if sort != subtypes.Asc && sort != subtypes.Desc {
 		return fmt.Errorf("Некорректный парметр сортировки")
 	}
 	return nil
 }
+
+// funcHandler - обработчик функций
 func funcHandler(res http.ResponseWriter, req *http.Request) {
 	//получение списка объектов
 	root := req.FormValue("root")
 	sort := req.FormValue("sort")
-	err := checkFlags(root, sort)
+	err := validateFlags(root, sort)
 	switch err {
 	case nil:
-		listOfEntities, err := fileScanner.GetListOfEntitiesParameters(root, res, sort)
+		listOfEntities, err := fileScanner.GetListOfEntitiesParameters(root, sort)
 		if err != nil {
 			io.WriteString(res, fmt.Sprintf("ошибка при обработке запроса:%v\r\n", err))
 		}
@@ -82,27 +83,4 @@ func funcHandler(res http.ResponseWriter, req *http.Request) {
 		io.WriteString(res, fmt.Sprintf("%v", err))
 	}
 
-}
-
-// envParameters - получение переменной окружения из .env
-func envParameters() error {
-	file, err := os.Open(".env")
-	if err != nil {
-		return fmt.Errorf("ошибка при открытии файла с переменными окружения: %v", err)
-	}
-	defer file.Close()
-	var envVar fileScanner.EnvParam
-	scanner := bufio.NewScanner(file)
-	for scanner.Scan() {
-		envVar.Key = splitEnvParam(strings.ReplaceAll(scanner.Text(), " ", ""))[0]
-		envVar.Value = splitEnvParam(strings.ReplaceAll(scanner.Text(), " ", ""))[1]
-		os.Setenv(envVar.Key, envVar.Value)
-	}
-	return nil
-}
-
-// splitEnvParam - разбиение строки из .env
-func splitEnvParam(param string) []string {
-	array := regexp.MustCompile("=").Split(param, -1)
-	return array
 }
