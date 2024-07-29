@@ -1,4 +1,4 @@
-package main
+package server
 
 import (
 	"bufio"
@@ -27,10 +27,10 @@ func funcHandler(res http.ResponseWriter, req *http.Request) {
 	//получение списка объектов
 	root := req.FormValue("root")
 	sort := req.FormValue("sort")
-	err := checkFlags(root, sort)
+	err := fs.checkFlags(root, sort)
 	switch err {
 	case nil:
-		listOfEntities, err := getListOfEntitiesParameters(formatDir(root), res)
+		listOfEntities, err := fs.getListOfEntitiesParameters(fs.formatDir(root), res)
 		if err != nil {
 			io.WriteString(res, fmt.Sprintf("ошибка при обработке запроса:%v\r\n", err))
 		}
