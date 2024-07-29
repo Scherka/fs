@@ -1,47 +1,36 @@
 <html>
-    <head><link rel="stylesheet" href="table.css"></head>  
+    <!--Заголовок и подключение css-->
+    <head>
+        <title>File Scanner</title>
+        <link rel="stylesheet" href="table.css"></head>  
 <body>
+    <!--Кнопки-->
+    <div class = "layer1">
     <button type="button">Назад</button>
-    <button type="button">Сортировка</button>
+    <button type="button">Сортировать по убыванию</button>
+    </div>
+<!--таблица-->
 <table class="table">
-    <caption>/home/sergey</captioncaption>
-	<thead>
-        
+    <caption class = "layer1">Текущий каталог: /home/sergey</caption>
+	<thead>  
 		<tr>
-
 			<th>Тип</th>
-
 			<th>Имя</th>
-
 			<th>Размер</th>
-
 		</tr>
-
 	</thead>
-
 	<tbody>
-
 		<tr class = "color">
-        
 			<td>Файл</td>
-
 			<td>fs.go</td>
-
 			<td>42 кбайт</td>
-
 		</tr>
         <tr class = "color">
-        
 			<td>Каталог</td>
-
 			<td>empty</td>
-
 			<td>4 кбайт</td>
-
 		</tr>
-
 	</tbody>
-
 </table>
 </body>
 </html>
