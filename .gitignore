@@ -1,5 +1,7 @@
 *
 !.gitignore
-!fs.go
+!.go
 !.env 
+!fs
+!server
 !*/
