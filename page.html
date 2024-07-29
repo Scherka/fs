@@ -3,11 +3,12 @@
     <head>
         <title>File Scanner</title>
         <link rel="stylesheet" href="table.css"></head>  
+        <script type = "module" src = "./page.js"></script>
 <body>
     <!--Кнопки-->
     <div class = "layer1">
-    <button type="button">Назад</button>
-    <button type="button">Сортировать по убыванию</button>
+    <button type="button" onclick="readFile()">Назад</button>
+    <button type="button" id = "buttonSort" onclick="changeButtonName()">Сортировать по убыванию</button>
     </div>
 <!--таблица-->
 <table class="table">

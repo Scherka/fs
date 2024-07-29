@@ -10,7 +10,8 @@ type EntityStruct struct {
 
 // envParam - переменная окружения
 type EnvParam struct {
-	Port string //значение
+	Port string //значение порта
+	Root string //начальная директория
 }
 
 var ConfigParam EnvParam
