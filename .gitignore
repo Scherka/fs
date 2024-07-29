@@ -1,7 +1,8 @@
 *
 !.gitignore
-!.go
+!*.go
 !.env 
-!fs
+!fileScanner
 !server
+!*.mod
 !*/
