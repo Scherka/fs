@@ -6,10 +6,11 @@
         <link rel="stylesheet" href="/static/table.css">
 	</head>  
 <body>
+	<div class = "loader"></div>
     <!--Кнопки-->
     <div class = "layer1">
-    <button type="button" id = "buttonBack" onclick="currentRequest.changeRootBackward()">Назад</button>
-    <button type="button" id = "buttonSort" onclick="sortButtonReaction()">Сортировать по убыванию</button>
+    <button type="button" id = "buttonBack" onclick="changeRootBackward()">Назад</button>
+    <button type="button" id = "buttonSort" onclick="changeSort()">Сортировать по убыванию</button>
     </div>
 <!--таблица-->
 <table class="table">
