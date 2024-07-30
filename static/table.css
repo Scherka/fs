@@ -26,3 +26,16 @@ table .color:hover{
 .layer1{
 	margin-bottom: 10px;
 }
+
+#loader {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: black;
+    z-index: 9999; /* Убедитесь, что этот элемент находится поверх всего остального содержимого */
+}
+#content {
+    display: none;
+}
