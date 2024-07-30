@@ -1,23 +1,23 @@
-document.addEventListener("DOMContentLoaded", 
-    function(){
-    buildNewRequest()
-    });
-window.addEventListener('load', function() {
-        var blackout = document.getElementById('loader');
-        blackout.style.display = 'none';
-    
-        // Показываем основное содержимое страницы
-        var content = document.getElementById('content');
-        content.style.display = 'block';
-    });
-let mainRoot = "/home/sergey/"
+let mask = document.querySelector(".mask")
+let mainRoot = "E:/Учёба/"
 const loader = document.getElementById("loader")
-const tableJSON = document.getElementById("tableJSON")
+let tableJSON = document.getElementById("tableJSON")
 const sortButton = document.getElementById("buttonSort")
+const backButton = document.getElementById("buttonBack")
 const tableName = document.getElementById("tableName")
 const mistakeBox = document.getElementById("mistakeMessage")
 let curSort = "asc"
 let curRoot = mainRoot
+
+window.addEventListener('load', ()=>{
+    mask.classList.add('hide')
+    mask.remove()
+})
+document.addEventListener("DOMContentLoaded", 
+    function(){
+    buildNewRequest()
+    });
+
 /* реакция на нажатие по строке таблицы*/
 function changeRootForward(row){
     const cells = row.cells;
@@ -58,44 +58,58 @@ function changeTableName(root){
 
 /* запрос*/
 async function buildNewRequest() {
+    
     try {
+      loaderOn()
       url = `/fs?sort=${curSort}&root=${curRoot}`
-      changeTableName(curRoot)
       const response = await fetch(url);
       if (!response.ok) {
         throw new Error(`Ошибка HTTP ${response.status}`);
       }
       let data = await response.json();
       tableFromJSON(data)
-
+      loaderOff()
     } catch (error) {
         mistakeBox.textContent = "Ошибка во время выполнения запроса";
       console.error(`Ошибка fetch:`, error);
     }
+    
   }
 
-
+/* начало и конец загрузки */
 function loaderOn(){
-    loader.style.width="100%"
-    loader.style.height="100%"
+    tableJSON.style.visibility='hidden';
+    tableJSON.innerHTML = ''
+    changeTableName("Загрузка...")
+    sortButton.disabled = true
+    backButton.disabled = true
 }
 function loaderOff(){
-    loader.style.width="0%"
-    loader.style.height="0%"
+    tableJSON.style.visibility = 'visible';
+    sortButton.disabled = false
+    backButton.disabled = false
 }
 
 /* преобразование json в таблицу */
-function tableFromJSON (list){
-    let html = ``;  
-    for(let i in list) {
-        if (list[i]["Тип"]=="Дир"){
-            html += `<tr class = "color" onclick="changeRootForward(this)">`
-        } else {
-            html += `<tr>`
+function tableFromJSON(list) {
+    changeTableName(curRoot);
+    for (let i in list) {
+        let row = document.createElement('tr');
+        if (list[i]["Тип"] == "Дир") {
+            row.className = "color";
+            row.onclick = function() { changeRootForward(this); };
         }
-        html += `<td>${list[i][`Тип`]}</td><td>${list[i][`Имя`]}</td><td>${list[i][`Размер`]}</td></tr>`;
-        }
-    tableJSON.innerHTML = html;
-    }
+        let cellType = document.createElement('td');
+        cellType.textContent = list[i]["Тип"];
+        row.appendChild(cellType);
+        let cellName = document.createElement('td');
+        cellName.textContent = list[i]["Имя"];
+        row.appendChild(cellName);
+        let cellSize = document.createElement('td');
+        cellSize.textContent = list[i]["Размер"];
+        row.appendChild(cellSize);
+        tableJSON.appendChild(row);
+    }}
+
 
     

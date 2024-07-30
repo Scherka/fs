@@ -6,7 +6,6 @@
         <link rel="stylesheet" href="/static/table.css">
 	</head>  
 <body>
-	<div class = "loader"></div>
     <!--Кнопки-->
     <div class = "layer1">
     <button type="button" id = "buttonBack" onclick="changeRootBackward()">Назад</button>
@@ -23,8 +22,11 @@
 			<th>Размер</th>
 		</tr>
 	</thead>
-	<tbody id = "tableJSON">
-	</tbody>
+	<div class = "mask">
+		<div class = "loader">
+	<tbody id = "tableJSON"></tbody>
+		</div>
+</div>
 </table>
 <div id = "mistakeMessage"></div>
 <script type="application/javascript" src = "/static/page-script.js"></script>

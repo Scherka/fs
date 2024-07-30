@@ -27,14 +27,17 @@ table .color:hover{
 	margin-bottom: 10px;
 }
 
-#loader {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: black;
-    z-index: 9999; /* Убедитесь, что этот элемент находится поверх всего остального содержимого */
+.mask {
+	width: 100%;
+	height: 100%;
+	background: #fff;
+	position: fixed;
+	top:0;
+	z-index: 100;
+
+}
+.hide {
+	opacity: 0
 }
 #content {
     display: none;

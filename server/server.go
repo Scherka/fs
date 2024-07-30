@@ -39,7 +39,7 @@ func ServerStart() {
 	}()
 	//канал сигналов
 	sigChan := make(chan os.Signal, 1)
-	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM, syscall.SIGTSTP, syscall.SIGKILL, syscall.SIGQUIT)
+	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM, syscall.SIGKILL, syscall.SIGQUIT)
 	<-sigChan
 
 	shutdownCtx, shutdownRelease := context.WithTimeout(context.Background(), 5*time.Second)
