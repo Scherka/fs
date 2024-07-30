@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+    <!--Заголовок и подключение css-->
+    <head>
+        <title>File Scanner</title>
+        <link rel="stylesheet" href="/static/table.css">
+	</head>  
+<body>
+    <!--Кнопки-->
+    <div class = "layer1">
+    <button type="button" id = "buttonBack" onclick="currentRequest.changeRootBackward()">Назад</button>
+    <button type="button" id = "buttonSort" onclick="sortButtonReaction()">Сортировать по убыванию</button>
+    </div>
+<!--таблица-->
+<table class="table">
+	
+    <caption class = "layer1">Текущий каталог - <div id = "tableName"></div></caption>
+	<thead>  
+		<tr>
+			<th>Тип</th>
+			<th>Имя</th>
+			<th>Размер</th>
+		</tr>
+	</thead>
+	<tbody id = "tableJSON">
+	</tbody>
+</table>
+<div id = "mistakeMessage"></div>
+<script type="application/javascript" src = "/static/page-script.js"></script>
+</body>
+</html>
