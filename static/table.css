@@ -36,9 +36,3 @@ table .color:hover{
 	z-index: 100;
 
 }
-.hide {
-	opacity: 0
-}
-#content {
-    display: none;
-}

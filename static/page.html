@@ -3,13 +3,13 @@
     <!--Заголовок и подключение css-->
     <head>
         <title>File Scanner</title>
-        <link rel="stylesheet" href="/static/table.css">
+        <link rel="stylesheet" href="./static/table.css">
 	</head>  
 <body>
     <!--Кнопки-->
     <div class = "layer1">
-    <button type="button" id = "buttonBack" onclick="changeRootBackward()">Назад</button>
-    <button type="button" id = "buttonSort" onclick="changeSort()">Сортировать по убыванию</button>
+    <button type="button" id = "buttonBack">Назад</button>
+    <button type="button" id = "buttonSort">Сортировать по убыванию</button>
     </div>
 <!--таблица-->
 <table class="table">
@@ -22,13 +22,9 @@
 			<th>Размер</th>
 		</tr>
 	</thead>
-	<div class = "mask">
-		<div class = "loader">
 	<tbody id = "tableJSON"></tbody>
-		</div>
-</div>
 </table>
 <div id = "mistakeMessage"></div>
-<script type="application/javascript" src = "/static/page-script.js"></script>
+<script type="application/javascript" src = "/static/main.js"></script>
 </body>
 </html>
