@@ -30,7 +30,7 @@ func ServerStart() {
 	http.HandleFunc("/fs", funcHandler)
 	http.Handle("/static/", http.StripPrefix("/static", http.FileServer(http.Dir("./static"))))
 	http.HandleFunc("/", StartPage)
-	fmt.Printf("Сервер запускается на порте: %s", subtypes.ConfigParam.Port)
+	fmt.Printf("Сервер запускается на порте: %s ", subtypes.ConfigParam.Port)
 	go func() {
 		if err := server.ListenAndServe(); !errors.Is(err, http.ErrServerClosed) {
 			fmt.Printf("Ошибка сервера: %v", err)
@@ -38,7 +38,7 @@ func ServerStart() {
 	}()
 	//канал сигналов
 	sigChan := make(chan os.Signal, 1)
-	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM, syscall.SIGKILL, syscall.SIGQUIT)
+	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM, syscall.SIGKILL, syscall.SIGTSTP, syscall.SIGQUIT)
 	<-sigChan
 
 	shutdownCtx, shutdownRelease := context.WithTimeout(context.Background(), 5*time.Second)

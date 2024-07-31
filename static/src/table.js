@@ -1,4 +1,4 @@
-import { mainParameters, buildNewRequest} from "./request";
+import { mainParameters, buildNewRequest} from "./request.js";
 const tableName = document.getElementById("tableName")
 let tableJSON = document.getElementById("tableJSON")
 /* Изменить каталог в подписи таблицы */
@@ -6,8 +6,7 @@ function changeTableName(root){
     tableName.textContent = root;
 }
 /* реакция на нажатие по строке таблицы*/
-function changeRootForward(){
-    let row = document.getElementsByClassName('clickableRow')
+function changeRootForward(row){
     mainParameters.curRoot = mainParameters.curRoot.replaceAll(mainParameters.curRoot, `${mainParameters.curRoot}${row.cells[1].innerText}/`)
     buildNewRequest()
 }

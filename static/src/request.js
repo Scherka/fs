@@ -1,6 +1,6 @@
-import { loaderOn,loaderOff } from "./loader";
-import { checkBackButton } from "./button";
-import { tableFromJSON } from "./table";
+import { loaderOn,loaderOff } from "./loader.js";
+import { checkBackButton } from "./button.js";
+import { tableFromJSON, changeTableName} from "./table.js";
 const mistakeBox = document.getElementById("mistakeMessage")
 let mainParameters = {
   curSort: "asc",
@@ -21,17 +21,19 @@ function buildNewRequest() {
       })
       .then(responseBody => {
         let errorCode = responseBody['ErrorCode'];
+        if (mainParameters.curRoot == "") {
+          mainParameters.mainRoot = responseBody['Root'];
+        }
+        checkBackButton();
+        mainParameters.curRoot = responseBody['Root']
+        changeTableName(mainParameters.curRoot)
         if (errorCode == 0) {
-          if (mainParameters.curRoot == "") {
-            mainParameters.mainRoot = responseBody['Root'];
-          }
-          checkBackButton();
-          mainParameters.curRoot = responseBody['Root'];
           let data = responseBody['Data'];
           tableFromJSON(data);
         } else {
           mistakeBox.textContent = `Ошибка выполнения запроса: ${responseBody['ErrorMessage']}`;
         }
+        
         loaderOff();
       })
       .catch(error => {
