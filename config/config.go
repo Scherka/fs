@@ -9,6 +9,7 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/Scherka/fs/tree/server/fs/fileScanner"
 	"github.com/Scherka/fs/tree/server/fs/subtypes"
 )
 
@@ -22,7 +23,13 @@ func EnvParameters() error {
 
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
-		subtypes.ConfigParam.Port = splitEnvParam(strings.ReplaceAll(scanner.Text(), " ", ""))[1]
+		switch splitEnvParam(strings.ReplaceAll(scanner.Text(), " ", ""))[0] {
+		case "HTTP_PORT":
+			subtypes.ConfigParam.Port = splitEnvParam(strings.ReplaceAll(scanner.Text(), " ", ""))[1]
+		case "ROOT":
+			subtypes.ConfigParam.Root = fileScanner.FormatDir(splitEnvParam(strings.ReplaceAll(scanner.Text(), " ", ""))[1])
+		}
+
 	}
 	return nil
 }

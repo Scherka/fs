@@ -1,13 +1,13 @@
 let mask = document.querySelector(".mask")
-let mainRoot = "E:/Учёба/"
 const loader = document.getElementById("loader")
 let tableJSON = document.getElementById("tableJSON")
+let mainRoot = ""
 const sortButton = document.getElementById("buttonSort")
 const backButton = document.getElementById("buttonBack")
 const tableName = document.getElementById("tableName")
 const mistakeBox = document.getElementById("mistakeMessage")
 let curSort = "asc"
-let curRoot = mainRoot
+let curRoot = ""
 
 window.addEventListener('load', ()=>{
     mask.classList.add('hide')
@@ -55,26 +55,48 @@ function trimRoot(root){
 function changeTableName(root){
     tableName.textContent = root;
 }
-
-/* запрос*/
-async function buildNewRequest() {
-    
-    try {
-      loaderOn()
-      url = `/fs?sort=${curSort}&root=${curRoot}`
-      const response = await fetch(url);
-      if (!response.ok) {
-        throw new Error(`Ошибка HTTP ${response.status}`);
-      }
-      let data = await response.json();
-      tableFromJSON(data)
-      loaderOff()
-    } catch (error) {
-        mistakeBox.textContent = "Ошибка во время выполнения запроса";
-      console.error(`Ошибка fetch:`, error);
+//блокировка кнопки назад, если пользователь пытается выйти за пределы исходной директории
+function checkBackButton(){
+    if (curRoot.length <= mainRoot.length){
+        backButton.disabled = true
+    }else{
+        backButton.disabled = false
     }
-    
+}
+//запрос
+function buildNewRequest() {
+    loaderOn();
+    url = `/fs?sort=${curSort}&root=${curRoot}`;
+  
+    fetch(url)
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`Ошибка HTTP ${response.status}`);
+        }
+        return response.json();
+      })
+      .then(responseBody => {
+        let errorCode = responseBody['ErrorCode'];
+        if (errorCode == 0) {
+          if (curRoot == "") {
+            mainRoot = responseBody['Root'];
+          }
+          checkBackButton();
+          curRoot = responseBody['Root'];
+          let data = responseBody['Data'];
+          tableFromJSON(data);
+        } else {
+          mistakeBox.textContent = `Ошибка выполнения запроса: ${responseBody['ErrorMessage']}`;
+        }
+        loaderOff();
+      })
+      .catch(error => {
+        mistakeBox.textContent = "Ошибка во время выполнения запроса";
+        console.error(`Ошибка fetch:`, error);
+        loaderOff();
+      });
   }
+  
 
 /* начало и конец загрузки */
 function loaderOn(){
@@ -87,7 +109,7 @@ function loaderOn(){
 function loaderOff(){
     tableJSON.style.visibility = 'visible';
     sortButton.disabled = false
-    backButton.disabled = false
+    checkBackButton()
 }
 
 /* преобразование json в таблицу */

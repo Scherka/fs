@@ -33,8 +33,8 @@ func sortListOfEntities(listOfEntities []subtypes.EntityStruct, flag string) []s
 	return listOfEntities
 }
 
-// formatDir - добавление к root "/", если его нет
-func formatDir(dirWithoutSuffix string) string {
+// FormatDir - добавление к root "/", если его нет
+func FormatDir(dirWithoutSuffix string) string {
 	if !(strings.HasSuffix(dirWithoutSuffix, "/")) {
 		//приведение dir к нужному формату
 		return fmt.Sprintf("%s/", dirWithoutSuffix)
@@ -78,7 +78,7 @@ func getSizeOfDir(path string) (int64, error) {
 	}
 	for _, entity := range entities {
 		//дополняем текущий путь новым файлом/папкой
-		fullPath := fmt.Sprintf("%s%s", formatDir(path), entity.Name())
+		fullPath := fmt.Sprintf("%s%s", FormatDir(path), entity.Name())
 		fileStat, err := os.Lstat(fullPath)
 		if err != nil {
 			fmt.Printf("ошибка при получении параметров %s: %v", path, err)
@@ -100,7 +100,7 @@ func getSizeOfDir(path string) (int64, error) {
 
 // getListOfEntitiesParameters - получение списка папок/файлов и их свойств в корневом катлоге
 func GetListOfEntitiesParameters(root string, sort string) ([]subtypes.EntityStruct, error) {
-	root = formatDir(root)
+	root = FormatDir(root)
 	entities, err := os.ReadDir(root)
 	listOfEntitiesParameters := make([]subtypes.EntityStruct, len(entities))
 	if err != nil {

@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
 	"net/http"
 	"os"
 	"os/signal"
@@ -64,27 +63,41 @@ func validateFlags(root, sort string) error {
 
 // funcHandler - обработчик функций
 func funcHandler(res http.ResponseWriter, req *http.Request) {
+	subtypes.ClearResponse()
 	//получение списка объектов
 	root := req.FormValue("root")
+	if root == "" {
+		root = subtypes.ConfigParam.Root
+	}
+	subtypes.ResponseBody.Root = root
 	sort := req.FormValue("sort")
 	err := validateFlags(root, sort)
 	switch err {
 	case nil:
 		listOfEntities, err := fileScanner.GetListOfEntitiesParameters(root, sort)
 		if err != nil {
-			io.WriteString(res, fmt.Sprintf("ошибка при обработке запроса:%v\r\n", err))
+			//io.WriteString(res, fmt.Sprintf("ошибка при обработке запроса:%v\r\n", err))
+			subtypes.ResponseBody.ErrorCode = 1
+			subtypes.ResponseBody.ErrorMessage = fmt.Sprintf("ошибка при обработке запроса:%v\r\n", err)
+		} else {
+			subtypes.ResponseBody.Data = listOfEntities
 		}
-		//создание json-файла
-		fileJSON, err := json.MarshalIndent(listOfEntities, "", " ")
-		if err != nil {
-			io.WriteString(res, fmt.Sprintf("ошибка при обработке запроса:%v\r\n", err))
-		}
-		res.Header().Set("Content-Type", "application/json")
-		//вывод json на страницу
-		res.Write(fileJSON)
+
 	default:
-		io.WriteString(res, fmt.Sprintf("%v", err))
+		//io.WriteString(res, fmt.Sprintf("%v", err))
+		subtypes.ResponseBody.ErrorCode = 1
+		subtypes.ResponseBody.ErrorMessage = fmt.Sprint(err)
 	}
+	//создание json-файла
+	fileJSON, err := json.MarshalIndent(subtypes.ResponseBody, "", " ")
+	if err != nil {
+		//io.WriteString(res, fmt.Sprintf("ошибка при обработке запроса:%v\r\n", err))
+		subtypes.ResponseBody.ErrorCode = 1
+		subtypes.ResponseBody.ErrorMessage = fmt.Sprintf("ошибка при обработке запроса:%v\r\n", err)
+	}
+	res.Header().Set("Content-Type", "application/json")
+	//вывод json на страницу
+	res.Write(fileJSON)
 }
 
 func StartPage(rw http.ResponseWriter, r *http.Request) {
