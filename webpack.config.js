@@ -1,7 +1,7 @@
 const path = require("path");
 
 module.exports = {
-  entry: "/static/src/index.js",
+  entry: "/static/src/index.ts",
   mode: "development",
   output: {
     filename: "./main.js"
@@ -16,7 +16,13 @@ module.exports = {
 
   module: {
     rules: [
-
+      {
+        test: /\.m?js$/,
+        exclude: /(node_modules|bower_components)/,
+        use: {
+          loader: "babel-loader"
+        }
+      },
       {
         test: /\.css$/,
         use: [

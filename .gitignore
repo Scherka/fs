@@ -8,5 +8,6 @@
 !*.html
 !*.css
 !*.js
+!*.json
 !static
 !*/

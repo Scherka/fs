@@ -1,6 +1,5 @@
 import { changeRootBackward, changeSort } from './button.js';
-import {mainParameters, buildNewRequest} from './request.js';
-import { changeRootForward } from './table.js';
+import {buildNewRequest} from './request.js';
 window.addEventListener("load", 
     function(){
     buildNewRequest()
