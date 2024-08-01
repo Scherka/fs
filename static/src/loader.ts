@@ -1,4 +1,4 @@
-import { sortButton, backButton, checkBackButton, disableButton,enableButton } from './button';
+import { sortButton, backButton, checkBackButton } from './button';
 import { changeTableName, tableJSON } from './table';
 
 /* начало и конец загрузки */

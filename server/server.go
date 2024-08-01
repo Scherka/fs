@@ -102,7 +102,7 @@ func funcHandler(res http.ResponseWriter, req *http.Request) {
 
 func StartPage(rw http.ResponseWriter, r *http.Request) {
 	//создаем html-шаблон
-	tmpl, err := template.ParseFiles("./static/page.html")
+	tmpl, err := template.ParseFiles("./bundle/bundle.html")
 	if err != nil {
 		http.Error(rw, err.Error(), 400)
 		return

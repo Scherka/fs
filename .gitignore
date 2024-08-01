@@ -10,4 +10,5 @@
 !*.js
 !*.json
 !static
+!*.ts
 !*/

@@ -1,5 +1,4 @@
 import { sortButton, backButton, changeRootBackward, changeSort } from './button';
-import { loaderOn,loaderOff } from './loader';
 import { buildNewRequest } from './request';
 
 window.addEventListener("load", function () {

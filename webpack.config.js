@@ -12,10 +12,6 @@ module.exports = {
     ],
   },
   resolve: {
-    alias: {
-      // aliases used in the template
-      Bundle: path.resolve(__dirname, 'bundle/bundle.js'),
-    },
     extensions: ['.tsx', '.ts', '.js'],
   },
   output: {
@@ -23,8 +19,8 @@ module.exports = {
     path: path.resolve(__dirname, 'bundle'),
   },
   plugins: [new HtmlWebpackPlugin({
-    template: './static/page.html', // your HTML template file
-    filename: '../static/page.html', // output HTML file relative to output.path
+    template: '/static/template.html', // your HTML template file
+    filename: 'bundle.html', // output HTML file relative to output.path
   })],
   devServer: {
     static: path.join(__dirname, "static"),

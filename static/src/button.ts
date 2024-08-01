@@ -9,17 +9,6 @@ function changeRootBackward(): void {
     buildNewRequest();
 }
 
-//отключение кнопки
-function disableButton(btn:HTMLButtonElement): void {
-    console.log("before dsb",btn.disabled);
-    btn.disabled = true;
-    console.log("after dsb",btn.disabled);
-}
-// включение кнопки кнопки
-function enableButton(btn:HTMLButtonElement): void {
-    console.log("before enb",btn.disabled);
-    btn.disabled = false;
-}
 // блокировка кнопки назад, если пользователь пытается выйти за пределы исходной директории
 function checkBackButton(): void {
     if (mainParameters.curRoot.length <= mainParameters.mainRoot.length) {
@@ -50,4 +39,4 @@ function trimRoot(root: string): string {
     return `${root.slice(0, lastSlash)}/`;
 }
 
-export { sortButton, backButton, changeRootBackward, checkBackButton, changeSort, disableButton, enableButton };
+export { sortButton, backButton, changeRootBackward, checkBackButton, changeSort};
