@@ -16,11 +16,11 @@ module.exports = {
   },
   output: {
     filename: `bundle.[contenthash].js`,
-    path: path.resolve(__dirname, 'bundle'),
+    path: path.resolve(__dirname, 'static'),
   },
   plugins: [new HtmlWebpackPlugin({
     template: '/static/template.html', // your HTML template file
-    filename: 'bundle.html', // output HTML file relative to output.path
+    filename: '../bundle/bundle.html', // output HTML file relative to output.path
   })],
   devServer: {
     static: path.join(__dirname, "static"),

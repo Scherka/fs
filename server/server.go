@@ -28,7 +28,7 @@ func ServerStart() {
 	}
 
 	http.HandleFunc("/fs", funcHandler)
-	http.Handle("/static/", http.StripPrefix("/static", http.FileServer(http.Dir("./static"))))
+	http.Handle("/bundle/", http.StripPrefix("/bundle", http.FileServer(http.Dir("./bundle"))))
 	http.HandleFunc("/", StartPage)
 	fmt.Printf("Сервер запускается на порте: %s ", subtypes.ConfigParam.Port)
 	go func() {
