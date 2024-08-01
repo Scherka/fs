@@ -1,5 +1,5 @@
-import { sortButton, backButton, checkBackButton } from './button.ts';
-import { changeTableName } from './table.ts';
+import { sortButton, backButton, checkBackButton } from './button';
+import { changeTableName } from './table';
 
 /* начало и конец загрузки */
 function loaderOn(): void {
@@ -9,8 +9,8 @@ function loaderOn(): void {
         tableJSON.style.visibility = 'hidden';
         tableJSON.innerHTML = '';
         changeTableName("Загрузка...");
-        if(sortButton){sortButton.setAttribute("disabled", "false");}
-        if(backButton){backButton.setAttribute("disabled", "false");}
+        if(sortButton){sortButton.disabled=true;}
+        if(backButton){backButton.disabled=true;}
     } else {
         console.error("Элемент 'tableJSON' не найден.");
     }
@@ -21,7 +21,7 @@ function loaderOff(): void {
     
     if (tableJSON) {
         tableJSON.style.visibility = 'visible';
-        if(sortButton){sortButton.setAttribute("disabled", "false");}
+        if(sortButton){sortButton.disabled=false;}
         checkBackButton();
     } else {
         console.error("Элемент 'tableJSON' не найден.");

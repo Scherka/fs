@@ -1,20 +1,16 @@
-import { changeRootBackward, changeSort } from './button.ts';
-import { buildNewRequest } from './request.ts';
+import { sortButton, backButton, changeRootBackward, changeSort } from './button';
+import { buildNewRequest } from './request';
 
 window.addEventListener("load", function () {
     buildNewRequest();
-
-    const buttonBack = document.getElementById('buttonBack');
-    const buttonSort = document.getElementById('buttonSort');
-
-    if (buttonBack) {
-        buttonBack.addEventListener('click', changeRootBackward);
+    if (backButton) {
+        backButton.addEventListener('click', changeRootBackward);
     } else {
         console.error("Кнопка 'buttonBack' не найдена");
     }
 
-    if (buttonSort) {
-        buttonSort.addEventListener('click', changeSort);
+    if (sortButton) {
+        sortButton.addEventListener('click', changeSort);
     } else {
         console.error("Кнопка 'buttonSort' не найдена.");
     }

@@ -1,6 +1,6 @@
-import { loaderOn, loaderOff } from "./loader.ts";
-import { checkBackButton } from "./button.ts";
-import { tableFromJSON, changeTableName } from "./table.ts";
+import { loaderOn, loaderOff } from "./loader";
+import { checkBackButton } from "./button";
+import { tableFromJSON, changeTableName } from "./table";
 
 const mistakeBox = document.getElementById("mistakeMessage") as HTMLElement;
 
@@ -44,15 +44,15 @@ function buildNewRequest(): void {
           mistakeBox.textContent = `Ошибка выполнения запроса: ${responseBody['ErrorMessage']}`;
         }
       }
-      loaderOff();
     })
     .catch(error => {
       if (mistakeBox) {
         mistakeBox.textContent = "Ошибка во время выполнения запроса";
       }
       console.error(`Ошибка fetch:`, error);
-      loaderOff();
     });
+    loaderOff();
+    
 }
 
 export { mainParameters, buildNewRequest };

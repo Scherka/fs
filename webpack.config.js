@@ -1,40 +1,26 @@
-const path = require("path");
+const path = require('path');
 
 module.exports = {
-  entry: "/static/src/index.ts",
-  mode: "development",
-  output: {
-    filename: "./main.js"
-  },
-  devServer: {
-    contentBase: path.join(__dirname, "dist"),
-    compress: true,
-    port: 10001,
-    watchContentBase: true,
-    progress: true
-  },
-
+  entry: '/static/src/index.ts',
   module: {
     rules: [
       {
-        test: /\.m?js$/,
-        exclude: /(node_modules|bower_components)/,
-        use: {
-          loader: "babel-loader"
-        }
+        test: /\.ts?$/,
+        use: 'ts-loader',
+        exclude: /node_modules/,
       },
-      {
-        test: /\.css$/,
-        use: [
-          "style-loader",
-          {
-            loader: "css-loader",
-            options: {
-              modules: true
-            }
-          }
-        ]
-      }
-    ]
-  }
+    ],
+  },
+  resolve: {
+    extensions: ['.tsx', '.ts', '.js'],
+  },
+  output: {
+    filename: 'main.js',
+    path: path.resolve(__dirname, 'static'),
+  },
+  devServer: {
+    static: path.join(__dirname, "static"),
+    compress: true,
+    port: 4000,
+  },
 };

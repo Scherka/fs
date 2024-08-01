@@ -1,4 +1,4 @@
-import { mainParameters, buildNewRequest } from "./request.ts";
+import { mainParameters, buildNewRequest } from "./request";
 
 const tableName = document.getElementById("tableName") as HTMLElement;
 const tableJSON = document.getElementById("tableJSON") as HTMLElement;

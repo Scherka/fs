@@ -1,20 +1,20 @@
-import { mainParameters, buildNewRequest } from './request.ts';
+import { mainParameters, buildNewRequest } from './request';
 
-const sortButton = document.getElementById("buttonSort");
-const backButton = document.getElementById("buttonBack");
+const sortButton = document.getElementById("buttonSort")as HTMLButtonElement;;
+const backButton = document.getElementById("buttonBack") as HTMLButtonElement;;
 
-/* реакция на кнопку назад */
 function changeRootBackward(): void {
     mainParameters.curRoot = trimRoot(mainParameters.curRoot);
     buildNewRequest();
 }
 
+
 // блокировка кнопки назад, если пользователь пытается выйти за пределы исходной директории
 function checkBackButton(): void {
     if (mainParameters.curRoot.length <= mainParameters.mainRoot.length) {
-        if(backButton){backButton.setAttribute("disabled", "true");}
+        if(backButton){backButton.disabled=true};
     } else {
-        if(backButton){backButton.setAttribute("disabled", "false");}
+        if(backButton){backButton.disabled=false};
     }
 }
 
