@@ -1,8 +1,8 @@
 import { sortButton, backButton, changeRootBackward, changeSort } from './button';
+import { loaderOn,loaderOff } from './loader';
 import { buildNewRequest } from './request';
 
 window.addEventListener("load", function () {
-    buildNewRequest();
     if (backButton) {
         backButton.addEventListener('click', changeRootBackward);
     } else {
@@ -14,4 +14,6 @@ window.addEventListener("load", function () {
     } else {
         console.error("Кнопка 'buttonSort' не найдена.");
     }
+    buildNewRequest();
+    
 });

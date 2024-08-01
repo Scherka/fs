@@ -21,7 +21,7 @@ import (
 func ServerStart() {
 	err := config.EnvParameters()
 	if err != nil {
-		fmt.Printf("ошибка при обработке запроса:%v\r\n", err)
+		panic(fmt.Sprintf("ошибка при обработке запроса:%v\r\n", err))
 	}
 	server := &http.Server{
 		Addr: subtypes.ConfigParam.Port,
@@ -33,7 +33,7 @@ func ServerStart() {
 	fmt.Printf("Сервер запускается на порте: %s ", subtypes.ConfigParam.Port)
 	go func() {
 		if err := server.ListenAndServe(); !errors.Is(err, http.ErrServerClosed) {
-			fmt.Printf("Ошибка сервера: %v", err)
+			panic(fmt.Sprintf("Ошибка сервера: %v", err))
 		}
 	}()
 	//канал сигналов
@@ -45,7 +45,7 @@ func ServerStart() {
 	defer shutdownRelease()
 
 	if err := server.Shutdown(shutdownCtx); err != nil {
-		fmt.Printf("Ошибка остановки сервера: %v", err)
+		panic(fmt.Sprintf("Ошибка остановки сервера: %v", err))
 	}
 	fmt.Println("Сервер остановлен.")
 }
@@ -53,10 +53,10 @@ func ServerStart() {
 // validateFlags - проврека флагов
 func validateFlags(root, sort string) error {
 	if _, err := os.Stat(root); errors.Is(err, os.ErrNotExist) {
-		return fmt.Errorf("По данному пути ничего нет")
+		return fmt.Errorf("по данному пути ничего нет")
 	}
 	if sort != subtypes.Asc && sort != subtypes.Desc {
-		return fmt.Errorf("Некорректный парметр сортировки")
+		return fmt.Errorf("некорректный парметр сортировки")
 	}
 	return nil
 }

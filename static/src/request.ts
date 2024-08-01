@@ -19,8 +19,7 @@ let mainParameters: MainParameters = {
 // запрос
 function buildNewRequest(): void {
   loaderOn();
-  var url:string = `/fs?sort=${mainParameters.curSort}&root=${mainParameters.curRoot}`;
-
+  let url:string = `/fs?sort=${mainParameters.curSort}&root=${mainParameters.curRoot}`;
   fetch(url)
     .then(response => {
       if (!response.ok) {
@@ -44,15 +43,15 @@ function buildNewRequest(): void {
           mistakeBox.textContent = `Ошибка выполнения запроса: ${responseBody['ErrorMessage']}`;
         }
       }
+      loaderOff()
     })
     .catch(error => {
       if (mistakeBox) {
         mistakeBox.textContent = "Ошибка во время выполнения запроса";
       }
       console.error(`Ошибка fetch:`, error);
+      loaderOff()
     });
-    loaderOff();
-    
 }
 
 export { mainParameters, buildNewRequest };

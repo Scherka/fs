@@ -52,4 +52,4 @@ function tableFromJSON(list: TableRowData[]): void {
     }
 }
 
-export { tableFromJSON, changeRootForward, changeTableName };
+export { tableFromJSON, changeRootForward, changeTableName, tableJSON };
