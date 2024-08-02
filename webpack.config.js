@@ -9,6 +9,10 @@ module.exports = {
         use: 'ts-loader',
         exclude: /node_modules/,
       },
+      {
+        test: /\.css$/i,
+        use: ["style-loader", "css-loader"],
+      }
     ],
   },
   resolve: {
@@ -16,11 +20,11 @@ module.exports = {
   },
   output: {
     filename: `bundle.[contenthash].js`,
-    path: path.resolve(__dirname, 'static'),
+    path: path.resolve(__dirname, 'bundle'),
   },
   plugins: [new HtmlWebpackPlugin({
     template: '/static/template.html', // your HTML template file
-    filename: '../bundle/bundle.html', // output HTML file relative to output.path
+    filename: '../bundle/index.html', // output HTML file relative to output.path
   })],
   devServer: {
     static: path.join(__dirname, "static"),

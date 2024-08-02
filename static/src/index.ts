@@ -1,6 +1,6 @@
 import { sortButton, backButton, changeRootBackward, changeSort } from './button';
 import { buildNewRequest } from './request';
-
+import './styles'
 window.addEventListener("load", function () {
     if (backButton) {
         backButton.addEventListener('click', changeRootBackward);

@@ -9,7 +9,6 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
-	"text/template"
 	"time"
 
 	"github.com/Scherka/fs/tree/server/fs/config"
@@ -28,8 +27,7 @@ func ServerStart() {
 	}
 
 	http.HandleFunc("/fs", funcHandler)
-	http.Handle("/bundle/", http.StripPrefix("/bundle", http.FileServer(http.Dir("./bundle"))))
-	http.HandleFunc("/", StartPage)
+	http.Handle("/", http.FileServer(http.Dir("./bundle")))
 	fmt.Printf("Сервер запускается на порте: %s ", subtypes.ConfigParam.Port)
 	go func() {
 		if err := server.ListenAndServe(); !errors.Is(err, http.ErrServerClosed) {
@@ -98,20 +96,4 @@ func funcHandler(res http.ResponseWriter, req *http.Request) {
 	res.Header().Set("Content-Type", "application/json")
 	//вывод json на страницу
 	res.Write(fileJSON)
-}
-
-func StartPage(rw http.ResponseWriter, r *http.Request) {
-	//создаем html-шаблон
-	tmpl, err := template.ParseFiles("./bundle/bundle.html")
-	if err != nil {
-		http.Error(rw, err.Error(), 400)
-		return
-	}
-	//выводим шаблон клиенту в браузер
-	err = tmpl.Execute(rw, nil)
-	if err != nil {
-		http.Error(rw, err.Error(), 400)
-		return
-	}
-
 }
