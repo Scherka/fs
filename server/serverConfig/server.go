@@ -11,9 +11,9 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/Scherka/fs/tree/server/fs/config"
-	"github.com/Scherka/fs/tree/server/fs/fileScanner"
-	"github.com/Scherka/fs/tree/server/fs/subtypes"
+	"github.com/Scherka/fs/tree/server/fs/server/config"
+	"github.com/Scherka/fs/tree/server/fs/server/fileScanner"
+	"github.com/Scherka/fs/tree/server/fs/server/subtypes"
 )
 
 // ServerStart - запуск сервера
@@ -27,7 +27,7 @@ func ServerStart() {
 	}
 
 	http.HandleFunc("/fs", funcHandler)
-	http.Handle("/", http.FileServer(http.Dir("./bundle")))
+	http.Handle("/", http.FileServer(http.Dir("./static/bundle")))
 	fmt.Printf("Сервер запускается на порте: %s ", subtypes.ConfigParam.Port)
 	go func() {
 		if err := server.ListenAndServe(); !errors.Is(err, http.ErrServerClosed) {

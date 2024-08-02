@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/Scherka/fs/tree/server/fs/server"
+	server "github.com/Scherka/fs/tree/server/fs/server/serverConfig"
 )
 
 func main() {
