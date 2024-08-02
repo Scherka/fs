@@ -26,9 +26,4 @@ module.exports = {
     template: '/static/template.html', // your HTML template file
     filename: '../bundle/index.html', // output HTML file relative to output.path
   })],
-  devServer: {
-    static: path.join(__dirname, "static"),
-    compress: true,
-    port: 4000,
-  },
 };
