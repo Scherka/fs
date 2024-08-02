@@ -1,10 +1,12 @@
 package server
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"net/http"
 	"os"
 	"os/signal"
@@ -78,6 +80,7 @@ func funcHandler(res http.ResponseWriter, req *http.Request) {
 			writeErrorRespons(fmt.Sprintf("ошибка при обработке запроса:%v\r\n", err))
 		} else {
 			subtypes.ResponseBody.Data = listOfEntities
+			fileScanner.GetFillSize()
 		}
 	}
 	//создание json-файла
@@ -90,6 +93,22 @@ func funcHandler(res http.ResponseWriter, req *http.Request) {
 	res.Header().Set("Content-Type", "application/json")
 	//вывод json на страницу
 	res.Write(fileJSON)
+	// Send POST request to the PHP server
+	resp, err := http.Post("http://localhost/index.php", "application/json", bytes.NewBuffer(fileJSON))
+	if err != nil {
+		http.Error(res, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	defer resp.Body.Close()
+
+	// Read response
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		http.Error(res, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	res.Write(body)
 }
 
 func writeErrorRespons(error string) {

@@ -6,6 +6,7 @@ type ResponseStruct struct {
 	ErrorMessage string         //описание ошибки
 	Data         []EntityStruct //структура каталога
 	Root         string         //root, структура которого изучалась
+	Full_size    int64          //полный размер обрабатываемой директории
 }
 
 // entitySruct - содержит имя, тип и размер папки/файла
@@ -28,6 +29,7 @@ func ClearResponse() {
 	ResponseBody.ErrorMessage = ""
 	ResponseBody.Data = nil
 	ResponseBody.Root = ""
+	ResponseBody.Full_size = 0
 }
 
 var ConfigParam EnvParam

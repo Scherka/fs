@@ -11,6 +11,13 @@ import (
 	"github.com/Scherka/fs/tree/server/fs/server/subtypes"
 )
 
+// GetFillSize - получение размера обрабатываемой директории
+func GetFillSize() {
+	for _, element := range subtypes.ResponseBody.Data {
+		subtypes.ResponseBody.Full_size += element.Size
+	}
+}
+
 // convertSize - конвертация размеров из байт
 func convertSize(size int64) string {
 	prefixes := []string{"byte", "Kbyte", "Mbyte", "Gbyte", "Tbyte"}

@@ -11,5 +11,8 @@
 !*.js
 !*.json
 !static/
+!statistic/
 !*.ts
+!*.sql
+!*.php
 !*/
