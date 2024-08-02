@@ -24,11 +24,11 @@ interface TableRowData {
     "Имя": string;
     "Размер": string;
 }
-
+//загрузка информации из json в таблицу
 function tableFromJSON(list: TableRowData[]): void {
     changeTableName(mainParameters.curRoot);
     if (tableJSON) {
-        tableJSON.innerHTML = ''; // Clear existing table content
+        tableJSON.innerHTML = ''; //очистка тела таблицы
         list.forEach(item => {
             let row = document.createElement('tr');
             if (item["Тип"] === "Дир") {
@@ -36,6 +36,7 @@ function tableFromJSON(list: TableRowData[]): void {
                 row.classList.add("clickableRow");
                 row.onclick = function() { changeRootForward(row); };
             }
+            //заполнение ячеек
             let cellType = document.createElement('td');
             cellType.textContent = item["Тип"];
             row.appendChild(cellType);

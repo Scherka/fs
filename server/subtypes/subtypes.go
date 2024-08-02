@@ -36,3 +36,4 @@ var ResponseBody ResponseStruct
 const Asc = "asc"       //флаг сортировки по возрастанию
 const Desc = "desc"     //флаг сортировки по убыванию
 const MemoryBase = 1000 //основание конвертации памяти
+const Multiplier = 4

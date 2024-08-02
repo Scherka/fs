@@ -19,7 +19,9 @@ let mainParameters: MainParameters = {
 // запрос
 function buildNewRequest(): void {
   loaderOn();
+  //формирование запроса
   let url:string = `/fs?sort=${mainParameters.curSort}&root=${mainParameters.curRoot}`;
+  //запрос и обработка ответа
   fetch(url)
     .then(response => {
       if (!response.ok) {
@@ -34,6 +36,7 @@ function buildNewRequest(): void {
       }
       checkBackButton();
       mainParameters.curRoot = responseBody['Root'];
+      //переименование таблицы в соотвествии с текущей папкой
       changeTableName(mainParameters.curRoot);
       if (errorCode === 0) {
         var data = responseBody['Data'];

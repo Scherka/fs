@@ -39,7 +39,7 @@ func ServerStart() {
 	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM, syscall.SIGKILL, syscall.SIGTSTP, syscall.SIGQUIT)
 	<-sigChan
 
-	shutdownCtx, shutdownRelease := context.WithTimeout(context.Background(), 5*time.Second)
+	shutdownCtx, shutdownRelease := context.WithTimeout(context.Background(), subtypes.Multiplier*time.Second)
 	defer shutdownRelease()
 
 	if err := server.Shutdown(shutdownCtx); err != nil {
@@ -70,30 +70,29 @@ func funcHandler(res http.ResponseWriter, req *http.Request) {
 	subtypes.ResponseBody.Root = root
 	sort := req.FormValue("sort")
 	err := validateFlags(root, sort)
-	switch err {
-	case nil:
+	if err != nil {
+		writeErrorRespons(fmt.Sprintf("%v", err))
+	} else {
 		listOfEntities, err := fileScanner.GetListOfEntitiesParameters(root, sort)
 		if err != nil {
-			//io.WriteString(res, fmt.Sprintf("ошибка при обработке запроса:%v\r\n", err))
-			subtypes.ResponseBody.ErrorCode = 1
-			subtypes.ResponseBody.ErrorMessage = fmt.Sprintf("ошибка при обработке запроса:%v\r\n", err)
+			writeErrorRespons(fmt.Sprintf("ошибка при обработке запроса:%v\r\n", err))
 		} else {
 			subtypes.ResponseBody.Data = listOfEntities
 		}
-
-	default:
-		//io.WriteString(res, fmt.Sprintf("%v", err))
-		subtypes.ResponseBody.ErrorCode = 1
-		subtypes.ResponseBody.ErrorMessage = fmt.Sprint(err)
 	}
 	//создание json-файла
 	fileJSON, err := json.MarshalIndent(subtypes.ResponseBody, "", " ")
 	if err != nil {
-		//io.WriteString(res, fmt.Sprintf("ошибка при обработке запроса:%v\r\n", err))
-		subtypes.ResponseBody.ErrorCode = 1
-		subtypes.ResponseBody.ErrorMessage = fmt.Sprintf("ошибка при обработке запроса:%v\r\n", err)
+		writeErrorRespons(fmt.Sprintf("ошибка при обработке запроса:%v\r\n", err))
+		//subtypes.ResponseBody.ErrorCode = 1
+		//subtypes.ResponseBody.ErrorMessage = fmt.Sprintf("ошибка при обработке запроса:%v\r\n", err)
 	}
 	res.Header().Set("Content-Type", "application/json")
 	//вывод json на страницу
 	res.Write(fileJSON)
+}
+
+func writeErrorRespons(error string) {
+	subtypes.ResponseBody.ErrorCode = 1
+	subtypes.ResponseBody.ErrorMessage = error
 }

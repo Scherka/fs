@@ -1,6 +1,7 @@
 import { sortButton, backButton, changeRootBackward, changeSort } from './button';
 import { buildNewRequest } from './request';
 import './styles'
+//добавление к кнопкам "назад" и "сортировка" соответствующие функции
 window.addEventListener("load", function () {
     if (backButton) {
         backButton.addEventListener('click', changeRootBackward);

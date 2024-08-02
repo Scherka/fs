@@ -87,7 +87,7 @@ func getSizeOfDir(path string) (int64, error) {
 			tempSize, err := getSizeOfDir(fullPath)
 			if err != nil {
 				fmt.Printf("ошибка при чтении парметров %s :%v\r\n", entity.Name(), err)
-				sizeOfDir = 4 * subtypes.MemoryBase
+				sizeOfDir = subtypes.Multiplier * subtypes.MemoryBase
 			}
 			sizeOfDir += tempSize
 		} else {

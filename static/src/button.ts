@@ -1,9 +1,11 @@
 import { mainParameters, buildNewRequest } from './request';
-
+//кнопки "назад" и "сортировка"
 const sortButton = document.getElementById("buttonSort")as HTMLButtonElement;
 const backButton = document.getElementById("buttonBack") as HTMLButtonElement;
 const asc:string = 'asc';
 const desc:string = 'desc';
+
+//новый запрос к родительской папке
 function changeRootBackward(): void {
     mainParameters.curRoot = trimRoot(mainParameters.curRoot);
     buildNewRequest();
