@@ -14,7 +14,7 @@ import (
 // GetFillSize - получение размера обрабатываемой директории
 func GetFillSize() {
 	for _, element := range subtypes.ResponseBody.Data {
-		subtypes.ResponseBody.Full_size += element.Size
+		subtypes.ResponseBody.FullSize += element.Size
 	}
 }
 

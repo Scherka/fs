@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
 	"net/http"
 	"os"
 	"os/signal"
@@ -63,6 +62,7 @@ func validateFlags(root, sort string) error {
 
 // funcHandler - обработчик функций
 func funcHandler(res http.ResponseWriter, req *http.Request) {
+	start := time.Now()
 	subtypes.ClearResponse()
 	//получение списка объектов
 	root := req.FormValue("root")
@@ -83,7 +83,12 @@ func funcHandler(res http.ResponseWriter, req *http.Request) {
 			fileScanner.GetFillSize()
 		}
 	}
-	//создание json-файла
+	//вычисление времени работы сканера и запись в тело ответа
+	finish := time.Now()
+	subtypes.ResponseBody.DateOfRequest = finish.Format("02-01-2006")
+	subtypes.ResponseBody.TimeOfRequest = finish.Format("15:04:05")
+	subtypes.ResponseBody.LoadingTime = time.Since(start).Truncate(time.Millisecond).String()
+	//создание json-файлаtime.Since(start).Truncate(10 * time.Millisecond).String()
 	fileJSON, err := json.MarshalIndent(subtypes.ResponseBody, "", " ")
 	if err != nil {
 		writeErrorRespons(fmt.Sprintf("ошибка при обработке запроса:%v\r\n", err))
@@ -94,24 +99,29 @@ func funcHandler(res http.ResponseWriter, req *http.Request) {
 	//вывод json на страницу
 	res.Write(fileJSON)
 	// Send POST request to the PHP server
-	resp, err := http.Post("http://localhost/index.php", "application/json", bytes.NewBuffer(fileJSON))
+	resp, err := http.Post("http://localhost/recive.php", "application/json", bytes.NewBuffer(fileJSON))
 	if err != nil {
 		http.Error(res, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	defer resp.Body.Close()
-
 	// Read response
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		http.Error(res, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	res.Write(body)
+	/*
+		body, err := io.ReadAll(resp.Body)
+		//fmt.Printf("%v", body)
+		if err != nil {
+			http.Error(res, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		res.Header().Set("Content-Type", "application/json")
+		res.Write(body)
+	*/
 }
 
 func writeErrorRespons(error string) {
 	subtypes.ResponseBody.ErrorCode = 1
 	subtypes.ResponseBody.ErrorMessage = error
+	finish := time.Now()
+	subtypes.ResponseBody.DateOfRequest = finish.Format("02-01-2006")
+	subtypes.ResponseBody.TimeOfRequest = finish.Format("15:04:05")
 }

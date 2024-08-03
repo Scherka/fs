@@ -2,11 +2,14 @@ package subtypes
 
 // responSebody - тело ответа
 type ResponseStruct struct {
-	ErrorCode    int            //код ошибки 0-нет ошибки 1-есть ошибка
-	ErrorMessage string         //описание ошибки
-	Data         []EntityStruct //структура каталога
-	Root         string         //root, структура которого изучалась
-	Full_size    int64          //полный размер обрабатываемой директории
+	ErrorCode     int            //код ошибки 0-нет ошибки 1-есть ошибка
+	ErrorMessage  string         //описание ошибки
+	Data          []EntityStruct //структура каталога
+	Root          string         //root, структура которого изучалась
+	FullSize      int64          //полный размер обрабатываемой директории
+	LoadingTime   string         //время работы сканера
+	DateOfRequest string         //дата запроса
+	TimeOfRequest string         //время запроса
 }
 
 // entitySruct - содержит имя, тип и размер папки/файла
@@ -29,7 +32,10 @@ func ClearResponse() {
 	ResponseBody.ErrorMessage = ""
 	ResponseBody.Data = nil
 	ResponseBody.Root = ""
-	ResponseBody.Full_size = 0
+	ResponseBody.FullSize = 0
+	ResponseBody.LoadingTime = ""
+	ResponseBody.TimeOfRequest = ""
+	ResponseBody.DateOfRequest = ""
 }
 
 var ConfigParam EnvParam

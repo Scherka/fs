@@ -50,7 +50,7 @@ function buildNewRequest(): void {
     })
     .catch(error => {
       if (mistakeBox) {
-        mistakeBox.textContent = "Ошибка во время выполнения запроса";
+        mistakeBox.textContent = `Ошибка во время выполнения запроса: ${error}`;
       }
       console.error(`Ошибка fetch:`, error);
       loaderOff()

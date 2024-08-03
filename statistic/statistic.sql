@@ -4,7 +4,8 @@ use statDB;
 CREATE table Stat (
     id int auto_increment primary key,
     dir_path varchar(200),
-    total_size varchar(20), 
-    loading_time int,
-    date_time_of_load time
+    total_size varchar(100), 
+    loading_time varchar(15),
+    date_of_request varchar(20),
+    time_of_request varchar(15)
 )
