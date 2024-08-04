@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"net/http"
 	"os"
 	"os/signal"
@@ -27,7 +28,8 @@ func ServerStart() {
 		Addr: subtypes.ConfigParam.Port,
 	}
 
-	http.HandleFunc("/fs", funcHandler)
+	http.HandleFunc("/fs", fsHandler)
+	http.HandleFunc("/statistic", statHandler)
 	http.Handle("/", http.FileServer(http.Dir("./static/bundle")))
 	fmt.Printf("Сервер запускается на порте: %s ", subtypes.ConfigParam.Port)
 	go func() {
@@ -60,8 +62,8 @@ func validateFlags(root, sort string) error {
 	return nil
 }
 
-// funcHandler - обработчик функций
-func funcHandler(res http.ResponseWriter, req *http.Request) {
+// fsHandler - обработчик функций
+func fsHandler(res http.ResponseWriter, req *http.Request) {
 	start := time.Now()
 	subtypes.ClearResponse()
 	//получение списка объектов
@@ -85,9 +87,9 @@ func funcHandler(res http.ResponseWriter, req *http.Request) {
 	}
 	//вычисление времени работы сканера и запись в тело ответа
 	finish := time.Now()
-	subtypes.ResponseBody.DateOfRequest = finish.Format("02-01-2006")
+	subtypes.ResponseBody.DateOfRequest = finish.Format("2006-01-02")
 	subtypes.ResponseBody.TimeOfRequest = finish.Format("15:04:05")
-	subtypes.ResponseBody.LoadingTime = time.Since(start).Truncate(time.Millisecond).String()
+	subtypes.ResponseBody.LoadingTime = time.Since(start).Truncate(100 * time.Microsecond).String()
 	//создание json-файлаtime.Since(start).Truncate(10 * time.Millisecond).String()
 	fileJSON, err := json.MarshalIndent(subtypes.ResponseBody, "", " ")
 	if err != nil {
@@ -105,19 +107,22 @@ func funcHandler(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 	defer resp.Body.Close()
-	// Read response
-	/*
-		body, err := io.ReadAll(resp.Body)
-		//fmt.Printf("%v", body)
-		if err != nil {
-			http.Error(res, err.Error(), http.StatusInternalServerError)
-			return
-		}
-		res.Header().Set("Content-Type", "application/json")
-		res.Write(body)
-	*/
 }
-
+func statHandler(res http.ResponseWriter, req *http.Request) {
+	resp, err := http.Get("http://localhost/stat.php")
+	if err != nil {
+		http.Error(res, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	defer resp.Body.Close()
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		http.Error(res, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	res.Header().Set("Content-Type", "text/html")
+	res.Write(body)
+}
 func writeErrorRespons(error string) {
 	subtypes.ResponseBody.ErrorCode = 1
 	subtypes.ResponseBody.ErrorMessage = error

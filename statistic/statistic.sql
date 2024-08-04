@@ -6,6 +6,6 @@ CREATE table Stat (
     dir_path varchar(200),
     total_size varchar(100), 
     loading_time varchar(15),
-    date_of_request varchar(20),
-    time_of_request varchar(15)
+    date_of_request date,
+    time_of_request time
 )
