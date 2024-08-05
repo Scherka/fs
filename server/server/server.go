@@ -31,7 +31,7 @@ func ServerStart() {
 	http.HandleFunc("/fs", fsHandler)
 	http.HandleFunc("/statistic", statHandler)
 	http.Handle("/", http.FileServer(http.Dir("./static/bundle")))
-	fmt.Printf("Сервер запускается на порте: %s ", subtypes.ConfigParam.Port)
+	fmt.Printf("Сервер запускается на порте: %s\n", subtypes.ConfigParam.Port)
 	go func() {
 		if err := server.ListenAndServe(); !errors.Is(err, http.ErrServerClosed) {
 			panic(fmt.Sprintf("Ошибка сервера: %v", err))
@@ -82,42 +82,44 @@ func fsHandler(res http.ResponseWriter, req *http.Request) {
 			writeErrorRespons(fmt.Sprintf("ошибка при обработке запроса:%v\r\n", err))
 		} else {
 			subtypes.ResponseBody.Data = listOfEntities
-			fileScanner.GetFillSize()
+			//получение полного размера директории
+			fileScanner.GetFullSize()
 		}
 	}
 	//вычисление времени работы сканера и запись в тело ответа
 	finish := time.Now()
 	subtypes.ResponseBody.DateOfRequest = finish.Format("2006-01-02")
 	subtypes.ResponseBody.TimeOfRequest = finish.Format("15:04:05")
-	subtypes.ResponseBody.LoadingTime = time.Since(start).Truncate(100 * time.Microsecond).String()
-	//создание json-файлаtime.Since(start).Truncate(10 * time.Millisecond).String()
+	subtypes.ResponseBody.LoadingTime = float64(time.Since(start).Truncate(100 * time.Microsecond))
 	fileJSON, err := json.MarshalIndent(subtypes.ResponseBody, "", " ")
 	if err != nil {
 		writeErrorRespons(fmt.Sprintf("ошибка при обработке запроса:%v\r\n", err))
-		//subtypes.ResponseBody.ErrorCode = 1
-		//subtypes.ResponseBody.ErrorMessage = fmt.Sprintf("ошибка при обработке запроса:%v\r\n", err)
 	}
 	res.Header().Set("Content-Type", "application/json")
 	//вывод json на страницу
 	res.Write(fileJSON)
-	// Send POST request to the PHP server
-	resp, err := http.Post("http://localhost/recive.php", "application/json", bytes.NewBuffer(fileJSON))
+	// POST - запрос
+	resp, err := http.Post(subtypes.ConfigParam.Recive, "application/json", bytes.NewBuffer(fileJSON))
 	if err != nil {
-		http.Error(res, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	defer resp.Body.Close()
-}
-func statHandler(res http.ResponseWriter, req *http.Request) {
-	resp, err := http.Get("http://localhost/stat.php")
-	if err != nil {
-		http.Error(res, err.Error(), http.StatusInternalServerError)
-		return
+		fmt.Printf("Ошибка при выполнении POST-запроса:  %v", err)
 	}
 	defer resp.Body.Close()
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		http.Error(res, err.Error(), http.StatusInternalServerError)
+		fmt.Printf("Ошибка при выполнении POST-запроса %v:  %v", resp.Status, err)
+		return
+	}
+	fmt.Printf("%s %s", resp.Status, string(body))
+}
+func statHandler(res http.ResponseWriter, req *http.Request) {
+	resp, err := http.Get(subtypes.ConfigParam.Stat)
+	if err != nil {
+		fmt.Printf("Ошибка при выполнении GET-запроса:  %v", err)
+	}
+	defer resp.Body.Close()
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		fmt.Printf("Ошибка при выполнении GET-запроса:  %v", err)
 		return
 	}
 	res.Header().Set("Content-Type", "text/html")

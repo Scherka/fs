@@ -11,8 +11,8 @@ import (
 	"github.com/Scherka/fs/tree/server/fs/server/subtypes"
 )
 
-// GetFillSize - получение размера обрабатываемой директории
-func GetFillSize() {
+// GetFullSize - получение размера обрабатываемой директории
+func GetFullSize() {
 	for _, element := range subtypes.ResponseBody.Data {
 		subtypes.ResponseBody.FullSize += element.Size
 	}

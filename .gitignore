@@ -1,5 +1,4 @@
 *
-/static/bundle/
 !.gitignore
 !*.go
 !.env 
@@ -16,3 +15,5 @@
 !*.sql
 !*.php
 !*/
+static/bundle/
+node_modules

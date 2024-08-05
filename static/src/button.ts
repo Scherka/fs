@@ -2,6 +2,7 @@ import { mainParameters, buildNewRequest } from './request';
 //кнопки "назад" и "сортировка"
 const sortButton = document.getElementById("buttonSort")as HTMLButtonElement;
 const backButton = document.getElementById("buttonBack") as HTMLButtonElement;
+const statButton = document.getElementById("buttonStat") as HTMLButtonElement;
 const asc:string = 'asc';
 const desc:string = 'desc';
 
@@ -41,4 +42,4 @@ function trimRoot(root: string): string {
     return `${root.slice(0, lastSlash)}/`;
 }
 
-export { sortButton, backButton, changeRootBackward, checkBackButton, changeSort};
+export { statButton, sortButton, backButton, changeRootBackward, checkBackButton, changeSort};

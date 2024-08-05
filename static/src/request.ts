@@ -3,6 +3,7 @@ import { checkBackButton } from "./button";
 import { tableFromJSON, changeTableName } from "./table";
 
 const mistakeBox = document.getElementById("mistakeMessage") as HTMLElement;
+const mainField = document.getElementById("mainField") as HTMLElement;
 
 interface MainParameters {
   curSort: string;
@@ -57,4 +58,5 @@ function buildNewRequest(): void {
     });
 }
 
-export { mainParameters, buildNewRequest };
+
+export { mainParameters, buildNewRequest};

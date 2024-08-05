@@ -7,7 +7,7 @@ type ResponseStruct struct {
 	Data          []EntityStruct //структура каталога
 	Root          string         //root, структура которого изучалась
 	FullSize      int64          //полный размер обрабатываемой директории
-	LoadingTime   string         //время работы сканера
+	LoadingTime   float64        //время работы сканера
 	DateOfRequest string         //дата запроса
 	TimeOfRequest string         //время запроса
 }
@@ -22,8 +22,10 @@ type EntityStruct struct {
 
 // envParam - переменная окружения
 type EnvParam struct {
-	Port string //значение порта
-	Root string //начальная директория
+	Port   string //значение порта
+	Root   string //начальная директория
+	Recive string //запрос на recive.php
+	Stat   string //запрос на stat.php
 }
 
 // ClearResponse - очистка результатов прошлого запроса
@@ -33,7 +35,7 @@ func ClearResponse() {
 	ResponseBody.Data = nil
 	ResponseBody.Root = ""
 	ResponseBody.FullSize = 0
-	ResponseBody.LoadingTime = ""
+	ResponseBody.LoadingTime = 0
 	ResponseBody.TimeOfRequest = ""
 	ResponseBody.DateOfRequest = ""
 }
@@ -44,4 +46,4 @@ var ResponseBody ResponseStruct
 const Asc = "asc"       //флаг сортировки по возрастанию
 const Desc = "desc"     //флаг сортировки по убыванию
 const MemoryBase = 1000 //основание конвертации памяти
-const Multiplier = 4
+const Multiplier = 4    //множитель для конвертации памяти и времени ожидания завершения работы сервера

@@ -1,4 +1,4 @@
-import { sortButton, backButton, checkBackButton } from './button';
+import {statButton, sortButton, backButton, checkBackButton } from './button';
 import { changeTableName, tableJSON } from './table';
 
 /* начало и конец загрузки */
@@ -6,6 +6,7 @@ function loaderOn(): void {
     //блокировка кнопок
     sortButton.disabled=true;
     backButton.disabled=true;
+    statButton.disabled=true;
     //сокрытие тела таблицы
     if (tableJSON) {
         tableJSON.style.visibility = 'hidden';
@@ -18,6 +19,7 @@ function loaderOn(): void {
 function loaderOff(): void {
     //разблокирорвка кнопок
     sortButton.disabled=false;
+    statButton.disabled=false;
     checkBackButton()
     if (tableJSON) {
         tableJSON.style.visibility = 'visible';
