@@ -2,10 +2,10 @@ import { loaderOn, loaderOff } from "./loader";
 import { checkBackButton } from "./button";
 import { tableFromJSON, changeTableName } from "./table";
 
-const mistakeBox = document.getElementById("mistakeMessage") as HTMLElement;
-const mainField = document.getElementById("mainField") as HTMLElement;
+const mistakeBox = document.getElementById("mistake-message") as HTMLElement;
+const mainField = document.getElementById("main-field") as HTMLElement;
 
-interface MainParameters {
+type MainParameters = {
   curSort: string;
   curRoot: string;
   mainRoot: string;
@@ -31,31 +31,29 @@ function buildNewRequest(): void {
       return response.json();
     })
     .then(responseBody => {
-      var errorCode = responseBody['ErrorCode'];
+      var errorCode = responseBody['error_code'];
       if (mainParameters.curRoot === "") {
-        mainParameters.mainRoot = responseBody['Root'];
+        mainParameters.mainRoot = responseBody['root'];
       }
       checkBackButton();
-      mainParameters.curRoot = responseBody['Root'];
+      mainParameters.curRoot = responseBody['root'];
       //переименование таблицы в соотвествии с текущей папкой
       changeTableName(mainParameters.curRoot);
       if (errorCode === 0) {
-        var data = responseBody['Data'];
+        var data = responseBody['data'];
         tableFromJSON(data);
       } else {
         if (mistakeBox) {
           mistakeBox.textContent = `Ошибка выполнения запроса: ${responseBody['ErrorMessage']}`;
         }
       }
-      loaderOff()
     })
     .catch(error => {
       if (mistakeBox) {
         mistakeBox.textContent = `Ошибка во время выполнения запроса: ${error}`;
       }
       console.error(`Ошибка fetch:`, error);
-      loaderOff()
-    });
+    }).finally(()=>loaderOff());
 }
 
 

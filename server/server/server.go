@@ -32,6 +32,7 @@ func ServerStart() {
 	http.HandleFunc("/statistic", statHandler)
 	http.Handle("/", http.FileServer(http.Dir("./static/bundle")))
 	fmt.Printf("Сервер запускается на порте: %s\n", subtypes.ConfigParam.Port)
+	//Горутина для graceful shutdown
 	go func() {
 		if err := server.ListenAndServe(); !errors.Is(err, http.ErrServerClosed) {
 			panic(fmt.Sprintf("Ошибка сервера: %v", err))
@@ -65,41 +66,41 @@ func validateFlags(root, sort string) error {
 // fsHandler - обработчик функций
 func fsHandler(res http.ResponseWriter, req *http.Request) {
 	start := time.Now()
-	subtypes.ClearResponse()
+	var responseBody subtypes.Response
 	//получение списка объектов
 	root := req.FormValue("root")
 	if root == "" {
 		root = subtypes.ConfigParam.Root
 	}
-	subtypes.ResponseBody.Root = root
+	responseBody.Root = root
 	sort := req.FormValue("sort")
 	err := validateFlags(root, sort)
 	if err != nil {
-		writeErrorRespons(fmt.Sprintf("%v", err))
+		writeErrorRespons(&responseBody, fmt.Sprintf("%v", err))
 	} else {
 		listOfEntities, err := fileScanner.GetListOfEntitiesParameters(root, sort)
 		if err != nil {
-			writeErrorRespons(fmt.Sprintf("ошибка при обработке запроса:%v\r\n", err))
+			writeErrorRespons(&responseBody, fmt.Sprintf("ошибка при обработке запроса:%v\r\n", err))
 		} else {
-			subtypes.ResponseBody.Data = listOfEntities
+			responseBody.Data = listOfEntities
 			//получение полного размера директории
-			fileScanner.GetFullSize()
+			responseBody.FullSize = fileScanner.GetFullSize(responseBody)
 		}
 	}
 	//вычисление времени работы сканера и запись в тело ответа
 	finish := time.Now()
-	subtypes.ResponseBody.DateOfRequest = finish.Format("2006-01-02")
-	subtypes.ResponseBody.TimeOfRequest = finish.Format("15:04:05")
-	subtypes.ResponseBody.LoadingTime = float64(time.Since(start).Truncate(100 * time.Microsecond))
-	fileJSON, err := json.MarshalIndent(subtypes.ResponseBody, "", " ")
+	responseBody.DateOfRequest = finish.Format("2006-01-02")
+	responseBody.TimeOfRequest = finish.Format("15:04:05")
+	responseBody.LoadingTime = float64(time.Since(start).Truncate(100 * time.Microsecond))
+	fileJSON, err := json.MarshalIndent(responseBody, "", " ")
 	if err != nil {
-		writeErrorRespons(fmt.Sprintf("ошибка при обработке запроса:%v\r\n", err))
+		writeErrorRespons(&responseBody, fmt.Sprintf("ошибка при обработке запроса:%v\r\n", err))
 	}
 	res.Header().Set("Content-Type", "application/json")
 	//вывод json на страницу
 	res.Write(fileJSON)
 	// POST - запрос
-	resp, err := http.Post(subtypes.ConfigParam.Recive, "application/json", bytes.NewBuffer(fileJSON))
+	resp, err := http.Post(subtypes.ConfigParam.DB_INSERTER_PATH, "application/json", bytes.NewBuffer(fileJSON))
 	if err != nil {
 		fmt.Printf("Ошибка при выполнении POST-запроса:  %v", err)
 	}
@@ -112,7 +113,7 @@ func fsHandler(res http.ResponseWriter, req *http.Request) {
 	fmt.Printf("%s %s", resp.Status, string(body))
 }
 func statHandler(res http.ResponseWriter, req *http.Request) {
-	resp, err := http.Get(subtypes.ConfigParam.Stat)
+	resp, err := http.Get(subtypes.ConfigParam.STAT_DISPLAY_PATH)
 	if err != nil {
 		fmt.Printf("Ошибка при выполнении GET-запроса:  %v", err)
 	}
@@ -125,10 +126,10 @@ func statHandler(res http.ResponseWriter, req *http.Request) {
 	res.Header().Set("Content-Type", "text/html")
 	res.Write(body)
 }
-func writeErrorRespons(error string) {
-	subtypes.ResponseBody.ErrorCode = 1
-	subtypes.ResponseBody.ErrorMessage = error
+func writeErrorRespons(resp *subtypes.Response, error string) {
+	resp.ErrorCode = 1
+	resp.ErrorMessage = error
 	finish := time.Now()
-	subtypes.ResponseBody.DateOfRequest = finish.Format("02-01-2006")
-	subtypes.ResponseBody.TimeOfRequest = finish.Format("15:04:05")
+	resp.DateOfRequest = finish.Format("02-01-2006")
+	resp.TimeOfRequest = finish.Format("15:04:05")
 }

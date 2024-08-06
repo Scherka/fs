@@ -1,7 +1,7 @@
 import { mainParameters, buildNewRequest } from "./request";
 
-const tableName = document.getElementById("tableName") as HTMLElement;
-const tableJSON = document.getElementById("tableJSON") as HTMLElement;
+const tableName = document.getElementById("table-name") as HTMLElement;
+const tableJSON = document.getElementById("table-json") as HTMLElement;
 
 /* Изменить каталог в подписи таблицы */
 function changeTableName(root: string): void {
@@ -19,10 +19,10 @@ function changeRootForward(row: HTMLTableRowElement): void {
 }
 
 /* преобразование json в таблицу */
-interface TableRowData {
-    "Тип": string;
-    "Имя": string;
-    "Размер": string;
+type TableRowData = {
+    "type": string;
+    "name": string;
+    "size": string;
 }
 //загрузка информации из json в таблицу
 function tableFromJSON(list: TableRowData[]): void {
@@ -31,20 +31,20 @@ function tableFromJSON(list: TableRowData[]): void {
         tableJSON.innerHTML = ''; //очистка тела таблицы
         list.forEach(item => {
             let row = document.createElement('tr');
-            if (item["Тип"] === "Дир") {
+            if (item["type"] === "Дир") {
                 row.className = "color";
                 row.classList.add("clickableRow");
                 row.onclick = function() { changeRootForward(row); };
             }
             //заполнение ячеек
             let cellType = document.createElement('td');
-            cellType.textContent = item["Тип"];
+            cellType.textContent = item["type"];
             row.appendChild(cellType);
             let cellName = document.createElement('td');
-            cellName.textContent = item["Имя"];
+            cellName.textContent = item["name"];
             row.appendChild(cellName);
             let cellSize = document.createElement('td');
-            cellSize.textContent = item["Размер"];
+            cellSize.textContent = item["size"];
             row.appendChild(cellSize);
             tableJSON.appendChild(row);
         });

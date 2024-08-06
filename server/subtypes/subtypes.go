@@ -1,47 +1,34 @@
 package subtypes
 
-// responSebody - тело ответа
-type ResponseStruct struct {
-	ErrorCode     int            //код ошибки 0-нет ошибки 1-есть ошибка
-	ErrorMessage  string         //описание ошибки
-	Data          []EntityStruct //структура каталога
-	Root          string         //root, структура которого изучалась
-	FullSize      int64          //полный размер обрабатываемой директории
-	LoadingTime   float64        //время работы сканера
-	DateOfRequest string         //дата запроса
-	TimeOfRequest string         //время запроса
+// Response - тело ответа
+type Response struct {
+	ErrorCode     int      `json:"error_code"`      //код ошибки 0-нет ошибки 1-есть ошибка
+	ErrorMessage  string   `json:"error_message"`   //описание ошибки
+	Data          []Record `json:"data"`            //структура каталога
+	Root          string   `json:"root"`            //root, структура которого изучалась
+	FullSize      int64    `json:"full_size"`       //полный размер обрабатываемой директории
+	LoadingTime   float64  `json:"loading_time"`    //время работы сканера
+	DateOfRequest string   `json:"date_of_request"` //дата запроса
+	TimeOfRequest string   `json:"time_of_request"` //время запроса
 }
 
 // entitySruct - содержит имя, тип и размер папки/файла
-type EntityStruct struct {
-	Name          string `json:"Имя"`    //Имя объекта
-	EntityType    string `json:"Тип"`    //Тип объекта
-	Size          int64  `json:"-"`      //Размер объекта в байтах
-	SizeFormatted string `json:"Размер"` //Форматированный размер объекта
+type Record struct {
+	Name          string `json:"name"` //Имя объекта
+	EntityType    string `json:"type"` //Тип объекта
+	Size          int64  `json:"-"`    //Размер объекта в байтах
+	SizeFormatted string `json:"size"` //Форматированный размер объекта
 }
 
 // envParam - переменная окружения
 type EnvParam struct {
-	Port   string //значение порта
-	Root   string //начальная директория
-	Recive string //запрос на recive.php
-	Stat   string //запрос на stat.php
-}
-
-// ClearResponse - очистка результатов прошлого запроса
-func ClearResponse() {
-	ResponseBody.ErrorCode = 0
-	ResponseBody.ErrorMessage = ""
-	ResponseBody.Data = nil
-	ResponseBody.Root = ""
-	ResponseBody.FullSize = 0
-	ResponseBody.LoadingTime = 0
-	ResponseBody.TimeOfRequest = ""
-	ResponseBody.DateOfRequest = ""
+	Port              string //значение порта
+	Root              string //начальная директория
+	DB_INSERTER_PATH  string //запрос на recive.php
+	STAT_DISPLAY_PATH string //запрос на stat.php
 }
 
 var ConfigParam EnvParam
-var ResponseBody ResponseStruct
 
 const Asc = "asc"       //флаг сортировки по возрастанию
 const Desc = "desc"     //флаг сортировки по убыванию

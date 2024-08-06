@@ -1,8 +1,8 @@
 import { mainParameters, buildNewRequest } from './request';
 //кнопки "назад" и "сортировка"
-const sortButton = document.getElementById("buttonSort")as HTMLButtonElement;
-const backButton = document.getElementById("buttonBack") as HTMLButtonElement;
-const statButton = document.getElementById("buttonStat") as HTMLButtonElement;
+const sortButton = document.getElementById("button-sort")as HTMLButtonElement;
+const backButton = document.getElementById("button-back") as HTMLButtonElement;
+const statButton = document.getElementById("button-stat") as HTMLButtonElement;
 const asc:string = 'asc';
 const desc:string = 'desc';
 

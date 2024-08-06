@@ -15,16 +15,16 @@ try {
 
 	$json = file_get_contents('php://input');
 	$data = json_decode($json, true);
-	if (isset($data['FullSize']) && isset($data['LoadingTime']) && isset($data['DateOfRequest']) && isset($data['TimeOfRequest']) && isset($data['Root'])){
+	if (isset($data['full_size']) && isset($data['loading_time']) && isset($data['date_of_request']) && isset($data['time_of_request']) && isset($data['root'])){
 		if (json_last_error() === JSON_ERROR_NONE) {
-		    $full_size = $data['FullSize'];
-		    $loading_time = $data['LoadingTime'];
-		    $DateOfRequest = $data['DateOfRequest'];
-		    $TimeOfRequest = $data['TimeOfRequest'];
-		    $dir_path = $data['Root'];
+		    $full_size = $data['full_size'];
+		    $loading_time = $data['loading_time'];
+		    $date_of_request = $data['date_of_request'];
+		    $time_of_request = $data['time_of_request'];
+		    $dir_path = $data['root'];
 		    //Вставка данных
-		    $stmt = $conn->prepare("INSERT INTO Stat (dir_path, total_size, loading_time, time_of_request, date_of_request) VALUES (?, ?, ?, ?, ?)");
-		    $stmt->bind_param("sssss", $dir_path, $full_size,$loading_time,$TimeOfRequest, $DateOfRequest);
+		    $stmt = $conn->prepare("INSERT INTO stat (dir_path, total_size, loading_time, time_of_request, date_of_request) VALUES (?, ?, ?, ?, ?)");
+		    $stmt->bind_param("sssss", $dir_path, $full_size,$loading_time,$time_of_request, $date_of_request);
 
 		    if ($stmt->execute()) {
 		    	echo "Запись для $dir_path создана \n";

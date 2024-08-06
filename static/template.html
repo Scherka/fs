@@ -1,21 +1,21 @@
 <html>
 <!DOCTYPE html>
-<html id = "mainField">
+<html id = "main-field">
     <!--Заголовок и подключение css-->
     <head>
         <title>File Scanner</title>
 	</head>  
 <body>
     <!--Кнопки-->
-    <div class = "layer1">
-    <button type="button" id = "buttonBack">Назад</button>
-    <button type="button" id = "buttonSort">Сортировать по убыванию</button>
-    <button type="button" id = "buttonStat">Статистика</button>
+    <div class = "margin-10p">
+    <button type="button" id = "button-back">Назад</button>
+    <button type="button" id = "button-sort">Сортировать по убыванию</button>
+    <button type="button" id = "button-stat">Статистика</button>
     </div>
 <!--таблица-->
 <table class="table">
 	
-    <caption class = "layer1">Текущий каталог - <div id = "tableName"></div></caption>
+    <caption class = "layer1">Текущий каталог - <div id = "table-name"></div></caption>
 	<thead>  
 		<tr>
 			<th>Тип</th>
@@ -23,9 +23,9 @@
 			<th>Размер</th>
 		</tr>
 	</thead>
-	<tbody id = "tableJSON"></tbody>
+	<tbody id = "table-json"></tbody>
 </table>
-<div id = "mistakeMessage"></div>
+<div id = "mistake-message"></div>
 </body>
 </html>
 </html>

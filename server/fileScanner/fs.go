@@ -12,18 +12,20 @@ import (
 )
 
 // GetFullSize - получение размера обрабатываемой директории
-func GetFullSize() {
-	for _, element := range subtypes.ResponseBody.Data {
-		subtypes.ResponseBody.FullSize += element.Size
+func GetFullSize(resp subtypes.Response) int64 {
+	var fullSize int64
+	for _, element := range resp.Data {
+		fullSize += element.Size
 	}
+	return fullSize
 }
 
 // convertSize - конвертация размеров из байт
 func convertSize(size int64) string {
-	prefixes := []string{"byte", "Kbyte", "Mbyte", "Gbyte", "Tbyte"}
+	prefixes := []string{"Byte", "KByte", "MByte", "GByte", "TByte"}
 	i := 0
 	sizeFloat := float64(size)
-	for (sizeFloat > subtypes.MemoryBase) && (i < 4) {
+	for (sizeFloat > subtypes.MemoryBase) && (i < len(prefixes)-1) {
 		sizeFloat = sizeFloat / subtypes.MemoryBase
 		i++
 	}
@@ -31,7 +33,7 @@ func convertSize(size int64) string {
 }
 
 // sortListOfEntities - сортировка списка сущностей
-func sortListOfEntities(listOfEntities []subtypes.EntityStruct, flag string) []subtypes.EntityStruct {
+func sortListOfEntities(listOfEntities []subtypes.Record, flag string) []subtypes.Record {
 	if flag == subtypes.Desc {
 		sort.Slice(listOfEntities, func(i, j int) bool { return listOfEntities[i].Size > listOfEntities[j].Size })
 	} else if flag == subtypes.Asc {
@@ -51,8 +53,8 @@ func FormatDir(dirWithoutSuffix string) string {
 }
 
 // getEntityParameters - получить имя, размер и тип папки/файла
-func getEntityParameters(path string) (subtypes.EntityStruct, error) {
-	var entity subtypes.EntityStruct
+func getEntityParameters(path string) (subtypes.Record, error) {
+	var entity subtypes.Record
 	file, err := os.Lstat(path)
 	if err != nil {
 		return entity, fmt.Errorf("ошибка при получении параметров %s: %v", path, err)
@@ -106,10 +108,10 @@ func getSizeOfDir(path string) (int64, error) {
 }
 
 // getListOfEntitiesParameters - получение списка папок/файлов и их свойств в корневом катлоге
-func GetListOfEntitiesParameters(root string, sort string) ([]subtypes.EntityStruct, error) {
+func GetListOfEntitiesParameters(root string, sort string) ([]subtypes.Record, error) {
 	root = FormatDir(root)
 	entities, err := os.ReadDir(root)
-	listOfEntitiesParameters := make([]subtypes.EntityStruct, len(entities))
+	listOfEntitiesParameters := make([]subtypes.Record, len(entities))
 	if err != nil {
 		return nil, fmt.Errorf("ошибка при чтении каталога %s: %v", root, err)
 	}
@@ -117,7 +119,7 @@ func GetListOfEntitiesParameters(root string, sort string) ([]subtypes.EntityStr
 	wg := sync.WaitGroup{}
 	for i, entity := range entities {
 		wg.Add(1)
-		go func(root string, listOfEntitiesParameters []subtypes.EntityStruct, entity fs.DirEntry, i int) {
+		go func(root string, listOfEntitiesParameters []subtypes.Record, entity fs.DirEntry, i int) {
 			defer wg.Done()
 			//получаем параметры объекта
 			entityParameters, err := getEntityParameters(fmt.Sprintf("%s%s", root, entity.Name()))

@@ -28,10 +28,10 @@ func EnvParameters() error {
 			subtypes.ConfigParam.Port = splitEnvParam(strings.ReplaceAll(scanner.Text(), " ", ""))[1]
 		case "ROOT":
 			subtypes.ConfigParam.Root = fileScanner.FormatDir(splitEnvParam(strings.ReplaceAll(scanner.Text(), " ", ""))[1])
-		case "RECIVE":
-			subtypes.ConfigParam.Recive = splitEnvParam(strings.ReplaceAll(scanner.Text(), " ", ""))[1]
-		case "STAT":
-			subtypes.ConfigParam.Stat = splitEnvParam(strings.ReplaceAll(scanner.Text(), " ", ""))[1]
+		case "DB_INSERTER_PATH":
+			subtypes.ConfigParam.DB_INSERTER_PATH = splitEnvParam(strings.ReplaceAll(scanner.Text(), " ", ""))[1]
+		case "STAT_DISPLAY_PATH":
+			subtypes.ConfigParam.STAT_DISPLAY_PATH = splitEnvParam(strings.ReplaceAll(scanner.Text(), " ", ""))[1]
 		}
 
 	}

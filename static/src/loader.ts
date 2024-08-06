@@ -13,7 +13,7 @@ function loaderOn(): void {
         tableJSON.innerHTML = '';
         changeTableName("Загрузка...");
     } else {
-        console.error("Элемент 'tableJSON' не найден.");
+        console.error("Элемент 'table-json' не найден.");
     }
 }
 function loaderOff(): void {
@@ -24,7 +24,7 @@ function loaderOff(): void {
     if (tableJSON) {
         tableJSON.style.visibility = 'visible';
     } else {
-        console.error("Элемент 'tableJSON' не найден.");
+        console.error("Элемент 'table-json' не найден.");
     }
 }
 

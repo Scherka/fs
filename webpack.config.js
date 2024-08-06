@@ -1,7 +1,7 @@
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 module.exports = {
-  entry: '/static/src/index.ts',
+  entry: path.resolve('static','src','index.ts'),
   module: {
     rules: [
       {
@@ -20,10 +20,10 @@ module.exports = {
   },
   output: {
     filename: `bundle.[contenthash].js`,
-    path: path.resolve(__dirname, 'static/bundle'),
+    path: path.resolve(__dirname, 'static','bundle'),
   },
   plugins: [new HtmlWebpackPlugin({
-    template: '/static/template.html', // your HTML template file
-    filename: 'index.html', // output HTML file relative to output.path
+    template: path.resolve('static','template.html'), 
+    filename: 'index.html',
   })],
 };

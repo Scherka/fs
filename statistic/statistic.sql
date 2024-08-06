@@ -1,7 +1,7 @@
 drop database statDB;
 CREATE database statDB;
 use statDB;
-CREATE table Stat (
+CREATE table stat (
     id int auto_increment primary key not null,
     dir_path varchar(200)not null,
     total_size varchar(100) not null, 

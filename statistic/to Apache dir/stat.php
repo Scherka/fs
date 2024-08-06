@@ -37,9 +37,7 @@
 <body>
     <!--Кнопки-->
     
-    <div class = "layer1">
-    <button type="button" id = "buttonBack" onclick = "window.location.href='/'">Назад</button>
-    </div>
+    <button type="button" id = "button-back" onclick = "window.location.href='/'">Назад</button>
 <!--таблица-->
 <table class="table">
 	
@@ -68,7 +66,7 @@
 		    throw new Exception("Ошибка соединения с БД: " . $conn->connect_error);
 		}
 		//запрос к БД
-		$sql = "SELECT id, dir_path, total_size, loading_time, date_of_request, time_of_request FROM Stat";
+		$sql = "SELECT id, dir_path, total_size, loading_time, date_of_request, time_of_request FROM stat";
 		//результат запроса
 		$result = $conn->query($sql);
 		//заполнение таблицы
@@ -103,10 +101,10 @@
 	?>
 	</tbody>
 </table>
-<div id = "mistakeMessage"></div>
-<canvas id="myChart" width="400" height="200"></canvas>
+<div id = "mistake-message"></div>
+<canvas id="my-chart" width="400" height="200"></canvas>
 <script type = "module">
-const ctx = document.getElementById('myChart');
+const ctx = document.getElementById('my-chart');
 const rawData = <?php echo json_encode($data)?>;
 //сортировка данных для графика
 rawData.sort((a, b) => a[0] - b[0]);
