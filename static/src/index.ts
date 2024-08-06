@@ -1,7 +1,6 @@
 import { statButton, sortButton, backButton, changeRootBackward, changeSort } from './button';
 import { buildNewRequest } from './request';
 import './styles'
-import Chart from 'chart.js/auto';
 //добавление к кнопкам "назад" и "сортировка" соответствующие функции
 window.addEventListener("load", function () {
     if (backButton) {

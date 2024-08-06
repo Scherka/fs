@@ -39,9 +39,5 @@
     "webpack-cli": "5.1.4",
     "webpack-dev-server": "5.0.4",
     "wepack-cli": "0.0.1-security"
-  },
-  "dependencies": {
-    "@cubejs-client/core": "^0.31.0",
-    "chart.js": "^4.0.0"
   }
 }
