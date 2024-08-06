@@ -126,6 +126,7 @@ const data = {
     options: {
     scales: {
       y: {
+		beginAtZero: true,
       	type: 'logarithmic',
         title: {
           display: true,
@@ -139,6 +140,7 @@ const data = {
           }}},
           
       x: {
+		beginAtZero: true,
       	type: 'logarithmic',
         title: {
           display: true,
