@@ -41,7 +41,7 @@
 <!--таблица-->
 <table class="table">
 	
-    <caption class = "layer1">Запросы</div></caption>
+    <caption class = "container">Запросы</div></caption>
 	<thead>  
 		<tr>
 			<th>id</th>
@@ -69,8 +69,10 @@
 		$sql = "SELECT id, dir_path, total_size, loading_time, date_of_request, time_of_request FROM stat";
 		//результат запроса
 		$result = $conn->query($sql);
-		//заполнение таблицы
+		//данные для графика
 		$data[] = array();
+		//заполнение таблицы
+		
 		if ($result->num_rows > 0) {
 		    while($row = $result->fetch_assoc()) {
 		    	if (isset($row["id"]) && isset($row["dir_path"]) && isset($row["total_size"]) && isset($row["loading_time"]) && isset($row["date_of_request"]) && isset($row["time_of_request"])){

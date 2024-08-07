@@ -32,18 +32,19 @@ func ServerStart() {
 	http.HandleFunc("/statistic", statHandler)
 	http.Handle("/", http.FileServer(http.Dir("./static/bundle")))
 	fmt.Printf("Сервер запускается на порте: %s\n", subtypes.ConfigParam.Port)
+	//канал сигналов
+	sigChan := make(chan os.Signal, 5)
+	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM, syscall.SIGKILL, syscall.SIGTSTP, syscall.SIGQUIT)
 	//Горутина для graceful shutdown
 	go func() {
 		if err := server.ListenAndServe(); !errors.Is(err, http.ErrServerClosed) {
 			panic(fmt.Sprintf("Ошибка сервера: %v", err))
 		}
 	}()
-	//канал сигналов
-	sigChan := make(chan os.Signal, 1)
-	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM, syscall.SIGKILL, syscall.SIGTSTP, syscall.SIGQUIT)
+
 	<-sigChan
 
-	shutdownCtx, shutdownRelease := context.WithTimeout(context.Background(), subtypes.Multiplier*time.Second)
+	shutdownCtx, shutdownRelease := context.WithTimeout(context.Background(), time.Duration(subtypes.Multiplier.Value())*time.Second)
 	defer shutdownRelease()
 
 	if err := server.Shutdown(shutdownCtx); err != nil {
@@ -57,7 +58,7 @@ func validateFlags(root, sort string) error {
 	if _, err := os.Stat(root); errors.Is(err, os.ErrNotExist) {
 		return fmt.Errorf("по данному пути ничего нет")
 	}
-	if sort != subtypes.Asc && sort != subtypes.Desc {
+	if sort != subtypes.Asc.String() && sort != subtypes.Desc.String() {
 		return fmt.Errorf("некорректный парметр сортировки")
 	}
 	return nil
@@ -116,6 +117,7 @@ func statHandler(res http.ResponseWriter, req *http.Request) {
 	resp, err := http.Get(subtypes.ConfigParam.STAT_DISPLAY_PATH)
 	if err != nil {
 		fmt.Printf("Ошибка при выполнении GET-запроса:  %v", err)
+		return
 	}
 	defer resp.Body.Close()
 	body, err := io.ReadAll(resp.Body)
@@ -124,6 +126,9 @@ func statHandler(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 	res.Header().Set("Content-Type", "text/html")
+	if resp.StatusCode == int(subtypes.ServerErrorCode.Value()) {
+		fmt.Printf("Ошибка при получении статистики: %s", string(body))
+	}
 	res.Write(body)
 }
 func writeErrorRespons(resp *subtypes.Response, error string) {

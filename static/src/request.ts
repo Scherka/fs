@@ -9,21 +9,23 @@ type MainParameters = {
   curSort: string;
   curRoot: string;
   mainRoot: string;
+  url: string;
 }
 
 let mainParameters: MainParameters = {
   curSort: "asc",
   curRoot: "",
-  mainRoot: ""
+  mainRoot: "",
+  url: ""
 };
 
 // запрос
 function buildNewRequest(): void {
   loaderOn();
   //формирование запроса
-  let url:string = `/fs?sort=${mainParameters.curSort}&root=${mainParameters.curRoot}`;
+  mainParameters.url = `/fs?sort=${mainParameters.curSort}&root=${mainParameters.curRoot}`;
   //запрос и обработка ответа
-  fetch(url)
+  fetch(mainParameters.url)
     .then(response => {
       if (!response.ok) {
         throw new Error(`Ошибка HTTP ${response.status}`);
@@ -44,7 +46,7 @@ function buildNewRequest(): void {
         tableFromJSON(data);
       } else {
         if (mistakeBox) {
-          mistakeBox.textContent = `Ошибка выполнения запроса: ${responseBody['ErrorMessage']}`;
+          mistakeBox.textContent = `Ошибка выполнения запроса: ${responseBody['error_message']}`;
         }
       }
     })
@@ -53,7 +55,8 @@ function buildNewRequest(): void {
         mistakeBox.textContent = `Ошибка во время выполнения запроса: ${error}`;
       }
       console.error(`Ошибка fetch:`, error);
-    }).finally(()=>loaderOff());
+    })
+    .finally(()=>loaderOff());
 }
 
 

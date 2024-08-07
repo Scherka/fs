@@ -33,7 +33,7 @@ function tableFromJSON(list: TableRowData[]): void {
             let row = document.createElement('tr');
             if (item["type"] === "Дир") {
                 row.className = "color";
-                row.classList.add("clickableRow");
+                row.classList.add("clickable-row");
                 row.onclick = function() { changeRootForward(row); };
             }
             //заполнение ячеек
@@ -49,7 +49,7 @@ function tableFromJSON(list: TableRowData[]): void {
             tableJSON.appendChild(row);
         });
     } else {
-        console.error("'tableJSON' не найден.");
+        console.error("'table-json' не найден.");
     }
 }
 

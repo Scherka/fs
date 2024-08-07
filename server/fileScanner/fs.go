@@ -25,8 +25,8 @@ func convertSize(size int64) string {
 	prefixes := []string{"Byte", "KByte", "MByte", "GByte", "TByte"}
 	i := 0
 	sizeFloat := float64(size)
-	for (sizeFloat > subtypes.MemoryBase) && (i < len(prefixes)-1) {
-		sizeFloat = sizeFloat / subtypes.MemoryBase
+	for (sizeFloat > float64(subtypes.MemoryBase.Value())) && (i < len(prefixes)-1) {
+		sizeFloat = sizeFloat / float64(subtypes.MemoryBase.Value())
 		i++
 	}
 	return fmt.Sprintf("%.2f %s", sizeFloat, prefixes[i])
@@ -34,9 +34,9 @@ func convertSize(size int64) string {
 
 // sortListOfEntities - сортировка списка сущностей
 func sortListOfEntities(listOfEntities []subtypes.Record, flag string) []subtypes.Record {
-	if flag == subtypes.Desc {
+	if flag == subtypes.Desc.String() {
 		sort.Slice(listOfEntities, func(i, j int) bool { return listOfEntities[i].Size > listOfEntities[j].Size })
-	} else if flag == subtypes.Asc {
+	} else if flag == subtypes.Asc.String() {
 		sort.Slice(listOfEntities, func(i, j int) bool { return listOfEntities[i].Size < listOfEntities[j].Size })
 	}
 	return listOfEntities
@@ -96,7 +96,7 @@ func getSizeOfDir(path string) (int64, error) {
 			tempSize, err := getSizeOfDir(fullPath)
 			if err != nil {
 				fmt.Printf("ошибка при чтении парметров %s :%v\r\n", entity.Name(), err)
-				sizeOfDir = subtypes.Multiplier * subtypes.MemoryBase
+				sizeOfDir = subtypes.Multiplier.Value() * subtypes.MemoryBase.Value()
 			}
 			sizeOfDir += tempSize
 		} else {

@@ -1,5 +1,11 @@
 package subtypes
 
+// Sort - константы сортировки
+type Sort int
+
+// числовые константы
+type intConst int
+
 // Response - тело ответа
 type Response struct {
 	ErrorCode     int      `json:"error_code"`      //код ошибки 0-нет ошибки 1-есть ошибка
@@ -30,7 +36,40 @@ type EnvParam struct {
 
 var ConfigParam EnvParam
 
-const Asc = "asc"       //флаг сортировки по возрастанию
-const Desc = "desc"     //флаг сортировки по убыванию
-const MemoryBase = 1000 //основание конвертации памяти
-const Multiplier = 4    //множитель для конвертации памяти и времени ожидания завершения работы сервера
+const (
+	Asc  Sort = iota //флаг сортировки по возрастанию
+	Desc Sort = iota //флаг сортировки по убыванию
+)
+
+func (s Sort) String() string {
+	switch s {
+	case Asc:
+		return "asc"
+	case Desc:
+		return "desc"
+	}
+	return ""
+}
+
+// const Asc = "asc"
+// const Desc = "desc"
+const (
+	MemoryBase      intConst = iota //основание конвертации памяти
+	Multiplier      intConst = iota //множитель для конвертации памяти и времени ожидания завершения работы сервера
+	ServerErrorCode intConst = iota // ошибка сервера 500
+)
+
+func (c intConst) Value() int64 {
+	switch c {
+	case MemoryBase: //основание конвертации памяти
+		return 1000
+	case Multiplier: ////множитель для конвертации памяти и времени ожидания завершения работы сервера
+		return 4
+	case ServerErrorCode:
+		return 500
+	}
+	return 0
+}
+
+//const MemoryBase = 1000 //основание конвертации памяти
+//const Multiplier = 4    //множитель для конвертации памяти и времени ожидания завершения работы сервера
